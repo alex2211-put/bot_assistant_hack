@@ -14,8 +14,6 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    env:
-      PR_NUMBER: ${{ github.event.number }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
      
@@ -31,5 +29,5 @@ jobs:
           message: |
             A new PR is raised by ${{ github.actor }}.
             Commit message: ${{ github.event.commits[0].message }} 
-            View all PR's - (https://github.com/alex2211-put/bot_assistant_hack/pulls#${{ PR_NUMBER }})
+            View all PR's - (https://github.com/alex2211-put/bot_assistant_hack/pulls#${{ github.event.number }})
             See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
