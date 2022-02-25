@@ -1,43 +1,52 @@
 import json
 import os
-import pathlib
-import wave
-
-from vosk import Model
-from vosk import KaldiRecognizer
-
-
-_PATH_TO_BASE_DIR = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
+import speech_recognition as sr
+import subprocess
+import urllib.request
+from bot.helpers import read_yaml
 
 
-class LanguageModel:
+async def oga2wav(file_name):
+    src_filename = file_name
+    dest_filename = file_name + '.wav'
+    subprocess.run(['ffmpeg', '-i', src_filename, dest_filename])
+    return await wav2text(dest_filename, file_name)
 
-    def __init__(self, language='ru'):
-        self.language = language
-        self._model = None
-        self._recognizer = None
-        self._recognizer = self.change_language(language)
 
-    def change_language(self, language):
-        self.language = language
-        if self.language == 'ru':
-            self._model = Model(
-                str(_PATH_TO_BASE_DIR.joinpath('vosk-model-small-ru-0.22')),
-            )
-        else:
-            raise NotImplementedError(
-                f'Language {language} is not supported yet',
-            )
-        self._recognizer = None
-        return self._get_recognizer()
+async def wav2text(dest_filename, file_name):
+    r = sr.Recognizer()
+    message = sr.AudioFile(dest_filename)
 
-    def get_text_from_stream(self, file):
-        file_recognizer = KaldiRecognizer(self._model,
-                                          file.content)
-        name = json.loads(file_recognizer.Result()).get('text')
-        return name
+    with message as source:
+        audio = r.record(source)
+    try:
+        result = r.recognize_google(audio, language="ru_RU")
+        os.remove(dest_filename)
+        os.remove(file_name)
+        return format(result)
 
-    def _get_recognizer(self):
-        if self._recognizer is None:
-            self._recognizer = KaldiRecognizer(self._model, 16000)
-        return self._recognizer
+    except sr.UnknownValueError:
+        os.remove(dest_filename)
+        os.remove(file_name)
+        return 'Не удалось распознать текст'
+
+
+async def download(file_path, file_id):
+    url = (
+            f'https://api.telegram.org/file/bot{read_yaml.get_token_tg()}/' +
+            file_path
+    )
+    urllib.request.urlretrieve(url, file_id + '.oga')
+    file_name = file_id + '.oga'
+    return await oga2wav(file_name)
+
+
+async def request2text(file_id, s):
+    r = s.get(
+        f'https://api.telegram.org/bot' +
+        read_yaml.get_token_tg() +
+        f'/getFile?file_id={file_id}'
+    )
+    r = json.loads(r.text)
+
+    return await download(r['result']['file_path'], r['result']['file_id'])
