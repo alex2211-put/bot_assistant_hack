@@ -8,3 +8,10 @@ Link to the board - [Mango_bot](https://trello.com/b/wxsCduHL/mangobot)
 Team **Mango humans**
 1) Alexander Putin: [telegram](https://t.me/alik_put)
 2) Potapov Anton: [telegram](https://t.me/JustAnt)
+
+
+Database is used in this project: MongoDB.
+Reasons: 
+1. Speed. In our project speed of DB's responce more valuable advantage than relations between columns.
+2. Simple. BD should has about 10 atributs and our requests are going to be sort by 2 arguments as a maximum.
+3. Comfortable. Mongo has convenient and simple integration with python.   
