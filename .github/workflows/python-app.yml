@@ -5,7 +5,9 @@ name: Telegram notification
 
 on:
   pull_request:
-    branches: [ developer ]
+    branches: [ develop ]
+  push:
+    branches: [ develop ]
 env:
   PR_NUMBER: ${{ github.event.number }}
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
