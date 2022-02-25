@@ -4,7 +4,11 @@ import requests
 from aiogram import Bot
 from aiogram.dispatcher import Dispatcher
 from aiogram import executor
+from vosk import KaldiRecognizer, Model
+
 from bot.voice_recognizer import voice_model
+import os,sys
+from pydub import AudioSegment
 
 TELEGRAM_API_TOKEN = '5149750371:AAEYOvu-O0jgqHq5PZM3xyvTQ9Cni7T-woc'
 
@@ -25,14 +29,15 @@ def main():
     async def voice_mess(message):
         file_info = await bot.get_file(message.voice.file_id)
         await bot.download_file(file_info.file_path, destination='new.ogg')
-        # wave_audio_file = wave.open('new.ogg', "rb")
-        # print(downloaded_file)
-        # with open(f'{message.chat.id}.ogg', 'wb') as new_file:
-        #     downloaded_file.write(new_file)
-            # new_file.write(downloaded_file)
-        model = voice_model.LanguageModel()
+        song = AudioSegment.from_ogg('new.ogg')
+        song.export("temp.wav", format="wav")
+        model = Model('src/bot/voice_recognizer/vosk-model-small-ru-0.22')
+        wave_audio_file = wave.open("temp.wav", "r")
+        file_recognizer = KaldiRecognizer(model,
+                                          wave_audio_file.getframerate())
+        print(file_recognizer.Result())
         await bot.send_message(message.chat.id, text=f'Распознан текст:\n'
-                                                     f'{model.get_text_from_stream(wave.open("new.ogg", "rb").get_frames())}')
+                                                     f'{file_recognizer.Result()}')
 
     executor.start_polling(dp, skip_updates=True)
 
