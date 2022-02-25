@@ -6,7 +6,8 @@ name: Telegram notification
 on:
   pull_request:
     branches: [ developer ]
-
+env:
+  PR_NUMBER: ${{ github.event.number }}
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -16,6 +17,7 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+     
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
@@ -26,4 +28,4 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN_NOTIF }}
           message: |
-            A new PR is raised [View all PR's](https://github.com/alex2211-put/bot_assistant_hack/pulls)
+            A new PR is raised [View all PR's](https://github.com/alex2211-put/bot_assistant_hack/pulls#${{PR_NUMBER}})
