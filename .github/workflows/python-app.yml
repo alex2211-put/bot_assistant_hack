@@ -29,4 +29,7 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN_NOTIF }}
           message: |
-            A new PR is raised [View all PR's](https://github.com/alex2211-put/bot_assistant_hack/pulls#${{PR_NUMBER}})
+            A new PR is raised by ${{ github.actor }}.
+            Commit message: ${{ github.event.commits[0].message }} 
+            View all PR's - (https://github.com/alex2211-put/bot_assistant_hack/pulls#${{ PR_NUMBER }})
+            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
