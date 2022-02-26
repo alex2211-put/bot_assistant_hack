@@ -18,11 +18,14 @@ Reasons:
 
 
 BD atributs : {
-    "user_id":"xxx", 
-    "user_name" : "yyy", 
-    "chat_id" : "xxx", 
-    "date" : "00.00.0000",
-    "color" : ["red", "green", "blue"], 
-    "text" : "Issue reported."
+    "message_id" = "",
+    "chat_id" : "xxx",
+    "user_id":"xxx",
+    "first_name" = "",
+    "last_name" ="", 
+    "user_name" : "yyy",  
+    "date" : "0123456789",
+    "importance_marker" : ["red", "green", "blue"], 
+    "message_text" : "Issue reported."
 }
 
