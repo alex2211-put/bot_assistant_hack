@@ -18,14 +18,14 @@ Reasons:
 
 
 BD atributs : {
-    "message_id" = "",
+    "message_id" = 7,
     "chat_id" : "xxx",
-    "user_id":"xxx",
-    "first_name" = "",
-    "last_name" ="", 
+    "user_id": 25,
+    "first_name" = "@xxx",
+    "last_name" ="@xxx", 
     "user_name" : "yyy",  
-    "date" : "0123456789",
-    "importance_marker" : ["red", "green", "blue"], 
+    "date" : 0123456789,
+    "importance_marker" : "xxx" # ["red", "yello", "green"] - choices, 
     "message_text" : "Issue reported."
 }
 
