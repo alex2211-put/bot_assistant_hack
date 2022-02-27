@@ -19,13 +19,15 @@ Reasons:
 
 BD atributs : {
     "message_id" = 7,
-    "chat_id" : "xxx",
+    "chat_id" : 8,
     "user_id": 25,
-    "first_name" = "@xxx",
-    "last_name" ="@xxx", 
-    "user_name" : "yyy",  
+    "first_name" = "xxx",
+    "last_name" ="xxx", 
+    "user_name" : "@xxx",  
     "date" : 0123456789,
     "importance_marker" : "xxx" # ["red", "yello", "green"] - choices, 
-    "message_text" : "Issue reported."
+    "message_text" : "Issue reported.",
+    "message_type" = "type",
+    "content_id" = 28,
 }
 
