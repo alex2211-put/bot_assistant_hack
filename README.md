@@ -17,7 +17,7 @@ Reasons:
 3. Comfortable. Mongo has convenient and simple integration with python.   
 
 
-BD atributs : {
+DB atributs : {
     "message_id" = 7,
     "chat_id" : 8,
     "user_id": 25,
