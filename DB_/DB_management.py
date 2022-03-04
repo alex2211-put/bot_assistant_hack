@@ -12,7 +12,7 @@ class DB_management:
     def connect_to_a_project(self, project_name: str) -> None:
         self.current_project = self.current_DB[project_name]
 
-    def push_into_DB(self, message: Dict, importance_marker: str) -> None:
+    def push_into_DB(self, message: Dict, importance_marker: str, message_type) -> None:
         try:
             cur_dict = {"message_id": message["message_id"],
                         "chat_id": message["chat"]["id"],
@@ -24,12 +24,12 @@ class DB_management:
                         "importance_marker": message.get("importance_marker", "green"),
                         "message_text": message["text"],
                         "media_group_id": message.get(["media_group_id"]),
-                        "message_type": 
-                        "content_id": {"photo": [i_d["file_id"] for i_d in message.get("photo")],
-                                       "audio": [i_d["file_id"] for i_d in message.get("audio")],
-                                       "video": [i_d["file_id"] for i_d in message.get("video")],
-                                       "voice": [i_d["file_id"] for i_d in message.get("voice")],
-                                       "document": [i_d["file_id"] for i_d in message.get("document")],
+                        "message_type": message_type,
+                        "content_id": {"photo": message.get("photo")[0]["file_id"],
+                                       "audio": message.get("audio")[0]["file_id"],
+                                       "video": message.get("video")[0]["file_id"],
+                                       "voice": message.get("voice")[0]["file_id"],
+                                       "document": message.get("document")[0]["file_id"],
                                        "location": message.get("location")
                                        }
                         }
@@ -38,14 +38,31 @@ class DB_management:
             raise KeyError(cur_dict)
 
     def select_from_DB_search_by(self, filtr: Dict):
-        #filtr = {"count" : int a = None, how : int a = {-1, 0, 1} - ищем меньше исходной даты(-1), больше(1) или равне(0); в случае, когда ищем вообще все записи по проекту и дата равна 0,передавать 1 "date" : int a = 0, "importance_marker" : "xxx", "sort" : int a = {-1, 1}}
+        #filtr = {"count" : int a = 0, how : int a = {-1, 0, 1} - ищем меньше исходной даты(-1), больше(1) или равне(0); в случае, когда ищем вообще все записи по проекту и дата равна 0,передавать 1 "date" : int a = 0, "importance_marker" : "xxx", "sort" : int a = {-1, 1}}
 
-        if filtr["how"] == 0:
-            return self.current_project.find({"date": filtr["date"], "importance_marker": filtr["importance_marker"]}).sotr({$natural: filtr["sort"]}).limit(filtr["limit"])
-        elif filtr["hom"] == 1:
-            return self.current_project.find({"date": {$gt: filtr["date"]}, "importance_marker": filtr["importance_marker"]}).sotr({$natural: filtr["sort"]}).limit(filtr["limit"])
-        elif filtr["how"] == -1:
-            return self.current_project.find({"date": {$lt: filtr["date"]}, "importance_marker": filtr["importance_marker"]}).sotr({$natural: filtr["sort"]}).limit(filtr["limit"])
+        if filtr["count"] == 0:
+            if filtr["how"] == 0:
+                return self.current_project.find({"date": filtr["date"], "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]})
+            elif filtr["hom"] == 1:
+                return self.current_project.find({"date": {'$gt': filtr["date"]}, "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]})
+            elif filtr["how"] == -1:
+                return self.current_project.find({"date": {'$lt': filtr["date"]}, "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]})
+            
+        else:    
+            if filtr["how"] == 0:
+                return self.current_project.find({"date": filtr["date"], "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]}).limit(filtr["count"])
+            elif filtr["hom"] == 1:
+                return self.current_project.find({"date": {'$gt': filtr["date"]}, "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]}).limit(filtr["count"])
+            elif filtr["how"] == -1:
+                return self.current_project.find({"date": {'$lt': filtr["date"]}, "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]}).limit(filtr["count"])
 
     def select_from_DB_search_by_range(self, filtr: Dict):
-        pass
+        #filtr = {count: int a, "date_start" : int a = 0, "date_finish" = int b != 0, "how" : int a = {-1, 0, 1}, importace_marker: "xxx", "sort": int a = {-1, 1}}
+        if filtr["count"] == 0:
+           
+           return self.current_project.find({"date": {"$gt" : filtr["date_start"], "$lt" : filtr["date_finish"]}, "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]})
+
+        else:    
+            
+            return self.current_project.find({"date": {"$gt" : filtr["date_start"], "$lt" : filtr["date_finish"]}, "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]}).limit(filtr["count"])
+         
