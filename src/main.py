@@ -11,7 +11,7 @@ from bot.helpers import read_yaml
 
 
 def main():
-    bot = Bot(token=read_yaml.get_token_tg())
+    bot = Bot(token=read_yaml.get_token_tg()) #smth
     dp = Dispatcher(bot)
 
     @dp.message_handler(commands=['start'])
