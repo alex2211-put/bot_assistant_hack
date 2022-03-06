@@ -1,8 +1,10 @@
 import json
 import os
-import speech_recognition as sr
 import subprocess
 import urllib.request
+
+import speech_recognition as sr
+
 from bot.helpers import read_yaml
 
 
