@@ -14,7 +14,10 @@ jobs:
       with:
         python-version: 3.7
     - name: Install dependencies
-      run: pip install -r requirements.txt
+      run: |
+        pip install -r requirements.txt
+        pip install aiogram
+        pip install requests
     - uses: ricardochaves/python-lint@master
       with:
           python-root-list: "src"
