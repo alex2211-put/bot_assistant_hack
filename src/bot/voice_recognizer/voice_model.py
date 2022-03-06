@@ -34,7 +34,10 @@ async def wav2text(dest_filename, file_name):
 
 
 async def download(file_path, file_id):
-    url = f"https://api.telegram.org/file/bot{read_yaml.get_token_tg()}/" + file_path
+    url = (
+        f"https://api.telegram.org/file/bot{read_yaml.get_token_tg()}/"
+        + file_path
+    )
     urllib.request.urlretrieve(url, file_id + ".oga")
     file_name = file_id + ".oga"
     return await oga2wav(file_name)
