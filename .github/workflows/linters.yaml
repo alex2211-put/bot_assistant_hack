@@ -24,11 +24,9 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Lint with pylint
-      with:
-        python-root-list: "src"
       run: |
         pip install pylint
-        pylint .
+        pylint src
         ...
     - name: Lint with black
       run: |
