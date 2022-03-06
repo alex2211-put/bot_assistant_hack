@@ -8,6 +8,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Install dependencies
+      run: |
+        pip install -r "requipments.txt"
     - uses: actions/checkout@v1
     - uses: ricardochaves/python-lint@master
       with:
