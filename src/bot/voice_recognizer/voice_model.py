@@ -11,7 +11,7 @@ from bot.helpers import read_yaml
 async def oga2wav(file_name):
     src_filename = file_name
     dest_filename = file_name + '.wav'
-    subprocess.run(['ffmpeg', '-i', src_filename, dest_filename])
+    subprocess.run(['ffmpeg', '-i', src_filename, dest_filename], check=False)
     return await wav2text(dest_filename, file_name)
 
 
