@@ -18,6 +18,7 @@ jobs:
         pip install -r requirements.txt
         python3 -m pip install types-requests
         python3 -m pip install types-PyYAML
+         python -m pip install SpeechRecognition
     - name: Lint with flake8
       run: |
         pip install flake8
