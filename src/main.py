@@ -9,20 +9,25 @@ from bot.helpers import read_yaml
 # TODO: think about how to save information about users -
 #  what project they write about and what they have to do with
 
+
 def main():
     bot = Bot(token=read_yaml.get_token_tg())
     dp = Dispatcher(bot)
 
-    @dp.message_handler(commands=["start"])
+    @dp.message_handler(commands=['start'])
     async def start(message):
-        await bot.send_message(message.chat.id, text=f'Пришел объект {message}')
+        await bot.send_message(
+            message.chat.id, text=f'Пришел объект {message}'
+        )
 
     @dp.message_handler(
         content_types=['video', 'photo', 'document', 'audio', 'location'],
     )
     async def content_mess(message):
         # TODO: save to the project
-        await bot.send_message(message.chat.id, text=f'Пришел контент {message}')
+        await bot.send_message(
+            message.chat.id, text=f'Пришел контент {message}'
+        )
 
     @dp.message_handler(content_types=['voice'])
     async def voice_mess(message):
@@ -32,10 +37,11 @@ def main():
             message.voice.file_id,
             session,
         )
-        await bot.send_message(message.chat.id, text=f'Распознан текст:\n'
-                                                     f'{text_from_voice}')
+        await bot.send_message(
+            message.chat.id, text=f'Распознан текст:\n' f'{text_from_voice}'
+        )
 
-    @dp.message_handler(commands=["add"])
+    @dp.message_handler(commands=['add'])
     async def add_project(message):
         # TODO: save a new project in the database by its hash.
         #  Add a state machine
@@ -43,28 +49,28 @@ def main():
         # dbConnection.add_project(message)
         pass
 
-    @dp.message_handler(commands=["all"])
+    @dp.message_handler(commands=['all'])
     async def get_active_projects(message):
         # TODO: return only those projects that the user is related to
         # dbConnection = dbConnection()
         # all_projects = dbConnection.get_all_projects_for_user()
-        # await bot.send_message(message.chat.id, text=f'Доступные проекты:\n' +
-        # '\n'.join(all_projects))
+        # await bot.send_message(message.chat.id, text=f'Доступные проекты:\n'
+        # + '\n'.join(all_projects))
         pass
 
-    @dp.message_handler(commands=["select"])
+    @dp.message_handler(commands=['select'])
     async def select_project(message):
         # TODO: change the project in the state machine or context,
         #  which the user is currently on
         pass
 
-    @dp.message_handler(commands=["get"])
+    @dp.message_handler(commands=['get'])
     async def get_messages_for_project(message):
         # TODO: in the state machine change the state and throw it
         #  to the choice of, which messages to receive / how many, etc.
         pass
 
-    @dp.message_handler(commands=["archive"])
+    @dp.message_handler(commands=['archive'])
     async def delete_project(message):
         # TODO: remove the project to the archive - we do not delete it
         #  from the database, but we stop showing it in active
@@ -72,7 +78,7 @@ def main():
         # dbConnection.archive_project(project)
         pass
 
-    @dp.message_handler(commands=["all_with_archive"])
+    @dp.message_handler(commands=['all_with_archive'])
     async def get_all_projects_vs_archive(message):
         # TODO: return all projects - even archived ones
         # dbConnection = dbConnection()
