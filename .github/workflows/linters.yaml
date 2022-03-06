@@ -9,5 +9,5 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - uses: ricardochaves/python-lint@test
+    - uses: ricardochaves/python-lint@master
     - uses: wemake-services/wemake-python-styleguide@master
