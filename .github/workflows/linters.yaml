@@ -31,14 +31,14 @@ jobs:
       run: |
         pip install isort
         isort .
-    - name: Lint with pycodestyle
-      run: |
-        pip install pycodestyle
-        pycodestyle .
     - name: Lint with mypy
       run: |
         pip install mypy
         mypy .
+    - name: Lint with pycodestyle
+      run: |
+        pip install pycodestyle
+        pycodestyle .
     - name: Lint with pylint
       run: |
         pip install pylint
