@@ -28,6 +28,8 @@ jobs:
         pip install pylint
         pylint .
         ...
+      with:
+        python-root-list: "src"
     - name: Lint with black
       run: |
         pip install black
