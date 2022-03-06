@@ -1,13 +1,19 @@
+import datetime
+
 import requests
 from aiogram import Bot
 from aiogram.dispatcher import Dispatcher
 from aiogram import executor
 from bot.voice_recognizer import voice_model
 from bot.helpers import read_yaml
-
+import logging
 
 # TODO: think about how to save information about users -
 #  what project they write about and what they have to do with
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(format='%(asctime)s %(message)s')
+
 
 def main():
     bot = Bot(token=read_yaml.get_token_tg())
@@ -15,6 +21,7 @@ def main():
 
     @dp.message_handler(commands=["start"])
     async def start(message):
+        logger.warning('Got start %s', message.text)
         await bot.send_message(message.chat.id, text=f'Пришел объект {message}')
 
     @dp.message_handler(
@@ -22,6 +29,8 @@ def main():
     )
     async def content_mess(message):
         # TODO: save to the project
+        logger.info('Got content message')
+        print(message)
         await bot.send_message(message.chat.id, text=f'Пришел контент {message}')
 
     @dp.message_handler(content_types=['voice'])
@@ -75,7 +84,7 @@ def main():
     @dp.message_handler(commands=["all_with_archive"])
     async def get_all_projects_vs_archive(message):
         # TODO: return all projects - even archived ones
-        # dbConnection = dbConnection()
+        #dbConnection = dbConnection()
         # dbConnection.archive_project(project)
         pass
 
