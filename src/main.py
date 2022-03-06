@@ -84,7 +84,7 @@ def main():
     @dp.message_handler(commands=["all_with_archive"])
     async def get_all_projects_vs_archive(message):
         # TODO: return all projects - even archived ones
-        #dbConnection = dbConnection()
+        #  dbConnection = dbConnection()
         # dbConnection.archive_project(project)
         pass
 
