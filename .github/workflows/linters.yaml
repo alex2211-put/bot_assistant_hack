@@ -10,4 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: ricardochaves/python-lint@master
+      with:
+          python-root-list: "src"
     - uses: wemake-services/wemake-python-styleguide@master
+    
