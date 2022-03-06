@@ -45,7 +45,7 @@ async def download(file_path, file_id):
 
 async def request2text(file_id, s):
     r = s.get(
-        f'https://api.telegram.org/bot' +
+        'https://api.telegram.org/bot' +
         read_yaml.get_token_tg() +
         f'/getFile?file_id={file_id}'
     )
