@@ -41,6 +41,4 @@ jobs:
     - name: Lint with pylint
       run: |
         pip install pylint
-        pylint src
-    - uses: wemake-services/wemake-python-styleguide@master
-    
+        pylint src    
