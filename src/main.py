@@ -26,7 +26,8 @@ def main():
     async def start(message):
         logger.info('Get /start command %s', message)
         await bot.send_message(
-            message.chat.id, text=f'Пришел объект {message}',
+            message.chat.id,
+            text=f'Пришел объект {message}',
         )
 
     @dp.message_handler(
@@ -36,7 +37,8 @@ def main():
         # TODO: save to the project
         logger.info('Get content message %s', message)
         await bot.send_message(
-            message.chat.id, text=f'Пришел контент {message}',
+            message.chat.id,
+            text=f'Пришел контент {message}',
         )
 
     @dp.message_handler(content_types=['voice'])
@@ -49,8 +51,9 @@ def main():
             session,
         )
         logger.info('recognize text from voice: %s', text_from_voice)
-        await bot.send_message(message.chat.id, text=f'Распознан текст:\n'
-                                                     f'{text_from_voice}')
+        await bot.send_message(
+            message.chat.id, text=f'Распознан текст:\n' f'{text_from_voice}'
+        )
 
     @dp.message_handler(commands=['add'])
     async def add_project(message):
@@ -66,7 +69,7 @@ def main():
         # TODO: return only those projects that the user is related to
         # dbConnection = dbConnection()
         # all_projects = dbConnection.get_all_projects_for_user()
-        # await bot.send_message(message.chat.id, text=f'Доступные проекты:\n' +
+        # await bot.send_message(message.chat.id, text=f'Доступные проекты:\n'
         # '\n'.join(all_projects))
 
     @dp.message_handler(commands=['select'])
