@@ -1,8 +1,10 @@
 import json
 import os
-import speech_recognition as sr
 import subprocess
 import urllib.request
+
+import speech_recognition as sr
+
 from bot.helpers import read_yaml
 
 
@@ -20,7 +22,7 @@ async def wav2text(dest_filename, file_name):
     with message as source:
         audio = r.record(source)
     try:
-        result = r.recognize_google(audio, language="ru_RU")
+        result = r.recognize_google(audio, language='ru_RU')
         os.remove(dest_filename)
         os.remove(file_name)
         return format(result)
@@ -33,8 +35,8 @@ async def wav2text(dest_filename, file_name):
 
 async def download(file_path, file_id):
     url = (
-            f'https://api.telegram.org/file/bot{read_yaml.get_token_tg()}/' +
-            file_path
+        f'https://api.telegram.org/file/bot{read_yaml.get_token_tg()}/'
+        + file_path
     )
     urllib.request.urlretrieve(url, file_id + '.oga')
     file_name = file_id + '.oga'
@@ -43,9 +45,9 @@ async def download(file_path, file_id):
 
 async def request2text(file_id, s):
     r = s.get(
-        f'https://api.telegram.org/bot' +
-        read_yaml.get_token_tg() +
-        f'/getFile?file_id={file_id}'
+        'https://api.telegram.org/bot'
+        + read_yaml.get_token_tg()
+        + f'/getFile?file_id={file_id}'
     )
     r = json.loads(r.text)
 
