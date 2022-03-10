@@ -22,7 +22,7 @@ def main():
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
-    @dp.message_handler(commands=["start"])
+    @dp.message_handler(commands=['start'])
     async def start(message):
         logger.info('Get /start command %s', message)
         await bot.send_message(
@@ -52,7 +52,7 @@ def main():
         await bot.send_message(message.chat.id, text=f'Распознан текст:\n'
                                                      f'{text_from_voice}')
 
-    @dp.message_handler(commands=["add"])
+    @dp.message_handler(commands=['add'])
     async def add_project(message):
         logger.info('Get /add command %s', message)
         # TODO: save a new project in the database by its hash.
@@ -60,7 +60,7 @@ def main():
         # dbConnection = dbConnection()
         # dbConnection.add_project(message)
 
-    @dp.message_handler(commands=["all"])
+    @dp.message_handler(commands=['all'])
     async def get_active_projects(message):
         logger.info('Get /all command %s', message)
         # TODO: return only those projects that the user is related to
@@ -69,19 +69,19 @@ def main():
         # await bot.send_message(message.chat.id, text=f'Доступные проекты:\n' +
         # '\n'.join(all_projects))
 
-    @dp.message_handler(commands=["select"])
+    @dp.message_handler(commands=['select'])
     async def select_project(message):
         logger.info('Get /select command %s', message)
         # TODO: change the project in the state machine or context,
         #  which the user is currently on
 
-    @dp.message_handler(commands=["get"])
+    @dp.message_handler(commands=['get'])
     async def get_messages_for_project(message):
         logger.info('Get /get command %s', message)
         # TODO: in the state machine change the state and throw it
         #  to the choice of, which messages to receive / how many, etc.
 
-    @dp.message_handler(commands=["archive"])
+    @dp.message_handler(commands=['archive'])
     async def delete_project(message):
         logger.info('Get /archive command %s', message)
         # TODO: remove the project to the archive - we do not delete it
@@ -89,7 +89,7 @@ def main():
         # dbConnection = dbConnection()
         # dbConnection.archive_project(project)
 
-    @dp.message_handler(commands=["all_with_archive"])
+    @dp.message_handler(commands=['all_with_archive'])
     async def get_all_projects_vs_archive(message):
         logger.info('Get /all_with_archive command %s', message)
         # TODO: return all projects - even archived ones

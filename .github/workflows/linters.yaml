@@ -1,0 +1,45 @@
+name: Python Lint
+
+on: [pull_request, push]
+
+jobs:
+  lint:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.7
+      uses: actions/setup-python@master
+      with:
+        python-version: 3.7
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        python3 -m pip install types-requests
+        python3 -m pip install types-PyYAML
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Lint with black
+      run: |
+        pip install black
+        black .
+    - name: Lint with isort
+      run: |
+        pip install isort
+        isort .
+    - name: Lint with pycodestyle
+      run: |
+        pip install pycodestyle
+        pycodestyle .
+    - name: Lint with pylint
+      run: |
+        pip install pylint
+        pylint src
+    - uses: wemake-services/wemake-python-styleguide@master
+    
