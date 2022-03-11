@@ -18,6 +18,7 @@ jobs:
         pip install -r requirements.txt
         python3 -m pip install types-requests
         python3 -m pip install types-PyYAML
+         python -m pip install SpeechRecognition
     - name: Lint with flake8
       run: |
         pip install flake8
@@ -40,6 +41,4 @@ jobs:
     - name: Lint with pylint
       run: |
         pip install pylint
-        pylint src
-    - uses: wemake-services/wemake-python-styleguide@master
-    
+        pylint src    
