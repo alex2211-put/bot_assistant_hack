@@ -66,7 +66,7 @@ class DB_management:
                 return self.current_project.find({"date": {filtr["how"]: filtr["date"]}, "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]})
 
         else:    
-            if filtr["how"] == 0:
+            if filtr["how"] != 0:
                 return self.current_project.find({"date": filtr["date"], "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]}).limit(filtr["count"])
             else:
                 return self.current_project.find({"date": {filtr["how"]: filtr["date"]}, "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]}).limit(filtr["count"])
