@@ -5,7 +5,6 @@ from typing import List
 
 class DB_management:
 
-    #connecting to MongoDB by setted URL
     def __init__(self, url, DB_name: str):
         self.client = pymongo.MongoClient(url)
         self.current_DB = self.client[DB_name]
@@ -48,29 +47,29 @@ class DB_management:
         except:
             raise KeyError(cur_dict)
 
-    def select_from_DB_search_by(self, filtr: Dict):
+    def select_from_DB_search_by(self, count: int = 0, how: str = 'eq', date: int = 0, importance_marker: str = 'green', sort: int = 1) -> Dict:
         '''
         Discribtion param filtr
         :count : int a = 0 by default
-        :how : int a = {'$gt', 0, '$lt'} -меньше даты(lt), больше(gt) или равна(0), в случае, когда ищем все записи по проекту, передавать 1 
+        :how = {'$gt', 'eq', '$lt'} -меньше даты(lt), больше(gt) или равна(0), в случае, когда ищем все записи по проекту, передавать 1 
         :date : int a = 0 by default
         :importance_marker : "xxx"
         :sort : int a = {-1, 1}}
         :return : dict
         '''
-        if filtr["count"] == 0:
-            if filtr["how"] == 0:
-                return self.current_project.find({"date": filtr["date"], "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]})
+        if count == 0:
+            if how == 'eq':
+                return self.current_project.find({"date": date, "importance_marker": importance_marker}).sotr({'date': sort})
             else:
-                return self.current_project.find({"date": {filtr["how"]: filtr["date"]}, "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]})
+                return self.current_project.find({"date": {how: date}, "importance_marker": importance_marker}).sotr({'date': sort})
 
         else:
-            if filtr["how"] != 0:
-                return self.current_project.find({"date": filtr["date"], "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]}).limit(filtr["count"])
+            if how == 'eq':
+                return self.current_project.find({"date": date, "importance_marker": importance_marker}).sotr({'date': sort}).limit(count)
             else:
-                return self.current_project.find({"date": {filtr["how"]: filtr["date"]}, "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]}).limit(filtr["count"])
+                return self.current_project.find({"date": {how: date}, "importance_marker": importance_marker}).sotr({'date': sort}).limit(count)
 
-    def select_from_DB_search_by_range(self, filtr: Dict):
+    def select_from_DB_search_by_range(self, count: int, date_start: int, date_finish: int, importance_marker: str = 'green', sort: int = 1) -> Dict:
         '''
          Discribtion param filtr
         :count : int a = 0 by default
@@ -80,10 +79,10 @@ class DB_management:
         :sort : int a = {-1, 1}}
         :return : dict
         '''
-        if filtr["count"] == 0:
+        if count == 0:
 
-           return self.current_project.find({"date": {"$gt": filtr["date_start"], "$lt": filtr["date_finish"]}, "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]})
+           return self.current_project.find({"date": {"$gt": date_start, "$lt": date_finish}, "importance_marker": importance_marker}).sotr({'date': sort})
 
         else:
 
-            return self.current_project.find({"date": {"$gt": filtr["date_start"], "$lt": filtr["date_finish"]}, "importance_marker": filtr["importance_marker"]}).sotr({'date': filtr["sort"]}).limit(filtr["count"])
+            return self.current_project.find({"date": {"$gt": date_start, "$lt": date_finish}, "importance_marker": importance_marker}).sotr({'date': sort}).limit(count)
