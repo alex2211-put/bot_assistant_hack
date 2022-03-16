@@ -15,16 +15,16 @@ class DB_management:
 
     def __get_id(self, message: Dict) -> List:
         types_of_content= ["vioce", "photo", "video", "audio", "document", "location"]
-        content_type = [i for i in types_of_content if message.get(i) is not None]
-        if content_type != []:
-            content_type = content_type[0]
-            try:
-                msg_id = message.get(content_type)["id"]
-            except:
-                raise KeyError()
+        for i in types_of_content:
+            if message.get(i) is not None:
+                content_type = i
+                break
+        try:
+            msg_id = message.get(content_type)["id"]
             return [content_type, msg_id]
-        else:
-            return [None, None]
+        except:
+            raise KeyError()
+        return [None, None]
 
     def push_into_DB(self, message: Dict, importance_marker: str, message_type) -> None:
 
