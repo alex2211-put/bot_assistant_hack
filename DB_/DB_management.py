@@ -22,7 +22,11 @@ class DB_management:
         msg_id = message.get(content_type)["id"]
         return [content_type, msg_id]
 
-    def push_into_DB(self, message: Dict, importance_marker: str, message_type) -> None:
+    def push_into_DB(self,
+                     message: Dict,
+                     importance_marker: str,
+                     message_type
+                     ) -> None:
 
         content_type, content_id = self.__get_id(message)
 
@@ -61,18 +65,20 @@ class DB_management:
         if count == 0:
             if how == 'eq':
                 return self.current_project.find({"date": date,
-                                                  "importance_marker": importance_marker}).sort({'date': sort})
+                "importance_marker": importance_marker}).sort({'date': sort})
             else:
                 return self.current_project.find({"date": {how: date},
-                                                  "importance_marker": importance_marker}).sort({'date': sort})
+                "importance_marker": importance_marker}).sort({'date': sort})
 
         else:
             if how == 'eq':
                 return self.current_project.find({"date": date,
-                                                  "importance_marker": importance_marker}).sort({'date': sort}).limit(count)
+                "importance_marker": importance_marker}
+                ).sort({'date': sort}).limit(count)
             else:
                 return self.current_project.find({"date": {how: date},
-                                                  "importance_marker": importance_marker}).sort({'date': sort}).limit(count)
+                "importance_marker": importance_marker}
+                ).sort({'date': sort}).limit(count)
 
     def select_from_DB_search_by_range(self,
                                        count: int,
@@ -91,8 +97,12 @@ class DB_management:
         :return : dict
         '''
         if count == 0:
-           return self.current_project.find({"date": {"$gt": date_start, "$lt": date_finish},
-                                             "importance_marker": importance_marker}).sort({'date': sort})
+            return self.current_project.find({"date": 
+            {"$gt": date_start, "$lt": date_finish},
+            "importance_marker": importance_marker}
+            ).sort({'date': sort})
         else:
-            return self.current_project.find({"date": {"$gt": date_start, "$lt": date_finish},
-                                              "importance_marker": importance_marker}).sort({'date': sort}).limit(count)
+            return self.current_project.find({"date": 
+            {"$gt": date_start, "$lt": date_finish},
+            "importance_marker": importance_marker}
+            ).sort({'date': sort}).limit(count)
