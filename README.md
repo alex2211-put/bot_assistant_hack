@@ -32,6 +32,6 @@ DB attributes : {
     'message_type' : 'type',
     'content_type' : 'xxx',
     'content_id' : 28,
-    'archived' : 'xxx' # ['True', 'False'] - choices
+    'archived' : False  # ['True', 'False'] - choices
 }
 ```
