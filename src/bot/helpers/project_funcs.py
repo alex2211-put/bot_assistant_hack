@@ -23,3 +23,17 @@ def save_project_info(
     }
     print('save', projects_info)
     # TODO: save to db
+
+
+def get_available_projects(
+        collection: typing.Dict,
+        user_name: str,
+        user_id: int,
+):
+    if collection.get(user_id) is None:
+        if collection.get(user_name):
+            collection[user_id] = collection.pop(user_name)
+        else:
+            return None
+    return collection[user_id]
+

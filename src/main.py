@@ -45,10 +45,21 @@ def main():
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
+    projects_info[140691900203440] = {'name': 'a', 'main_message': 'whatever', 'messages': []}
+    available_project_for_owner['a'] = {140691900203440}
+    available_project_for_owner['IvanLudvig'] = {140691900203440}
+    available_project_for_customer['a'] = {140691900203440}
+    person_states[342074576] = state_machine.ProjectStates.PROJECT_RECIPIENTS
+
+    for i in range(100):
+        projects_info[140691900203440]['messages'].append('message'+str(i))
+    
+
     @dispatcher.message_handler(commands=['start'])
     async def start(message):
         await set_commands(bot)
         logger.info('Get /start command %s', message)
+
         if message['from'].id in owners:
             await owner_funcs.start_func(bot, message)
         else:
@@ -488,6 +499,15 @@ def main():
             text=text,
             reply_markup=key,
         )
+
+    @dispatcher.callback_query_handler(
+        lambda call: call.data.split('_')[0] == 'getMessagesNum')
+    async def get_messages_num(call):
+        project_id = int(call.data.split('_')[1])
+        for message_to_delete in messages_to_delete:
+            await bot.delete_message(call.message.chat.id, message_to_delete)
+        messages_to_delete.clear()
+        await owner_funcs.get_messages_num(bot, call, projects_info[int(project_id)], messages_to_delete)
 
     @dispatcher.callback_query_handler(lambda call: True)
     async def callback_inline(call):
