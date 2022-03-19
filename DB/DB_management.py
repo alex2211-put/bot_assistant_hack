@@ -32,7 +32,7 @@ class DB_management:
                        message_type,
                        ):
         
-        self.current_project = project_name
+        self.connect_to_a_project(project_name)
 
         content_type, content_id = self._get_id(message)
 
@@ -146,7 +146,7 @@ class DB_management:
                             need_arh_doc: bool = False,
                             ) -> Dict:
 
-        self.current_project = project_name
+        self.connect_to_a_project(project_name)
         self.curr_select = self.select_from_DB(count,
                                                how,
                                                date,
@@ -164,7 +164,7 @@ class DB_management:
                                      need_arh_doc: bool = False,
                                      ) -> Dict:
 
-        self.current_project = project_name
+        self.connect_to_a_project(project_name)
         self.curr_select = self.select_search_by_range(
             count,
             date_start,
@@ -184,7 +184,7 @@ class DB_management:
                       sort: int = 1,
                       need_arh_doc: bool = False,
                       ):
-        self.current_project = project_name
+        self.connect_to_a_project(project_name)
         for curr_doc in self.select_from_DB(
                 count,
                 how,
@@ -203,7 +203,7 @@ class DB_management:
                                sort: int = 1,
                                need_arh_doc: bool = False,
                                ):
-        self.current_project = project_name
+        self.connect_to_a_project(project_name)
         for curr_doc in self.select_search_by_range(
                 count,
                 date_start,
