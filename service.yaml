@@ -1,4 +1,4 @@
 owners:
   - alik_put
-url : mongodb://mongodb0.example.com:27017
+url : mongodb://localhost:27017
 
