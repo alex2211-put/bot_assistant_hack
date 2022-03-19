@@ -8,8 +8,6 @@ import get_url
 #4 - сделать запись архивной
 
 
-
-
 class DB_management:
 
     def __init__(self, DB_name: str):
@@ -31,10 +29,10 @@ class DB_management:
         return [content_type, content_id]
 
     def insert_into_DB(self,
-                     message: Dict,
-                     importance_marker: str,
-                     message_type,
-                     ):
+                       message: Dict,
+                       importance_marker: str,
+                       message_type,
+                       ):
 
         content_type, content_id = self._get_id(message)
 
@@ -55,48 +53,49 @@ class DB_management:
                     }
         self.current_project.insert_one(cur_dict)
 
-    def select_from_DB_search_by(self,
-                             count: int = 100,
-                             how: str = 'eq',
-                             date: int = 0,
-                             importance_marker: str = 'green',
-                             sort: int = 1,
-                             need_arh_doc: bool = False,
-                             ) -> Dict:
-        '''
-        Discribtion param filtr
-        :how = {'$gt', 'eq', '$lt'} -меньше даты(lt), больше(gt) или равна(0)
-        :sort : int a = {-1, 1}}
-        '''
+    def select_from_DB(self,
+                       count: int = 100,
+                       how: str = 'eq',
+                       date: int = 0,
+                       importance_marker: str = 'green',
+                       sort: int = 1,
+                       need_arh_doc: bool = False,
+                       ) -> Dict:
+
         if count == 0:
             if how == 'eq':
                 self.curr_select = self.current_project.find(
-                {"date": date,
-                "importance_marker": importance_marker,
-                "archived": need_arh_doc}).sort({'date': sort})
+                    {
+                        "date": date,
+                        "archived": need_arh_doc
+                    },
+                ).sort({'date': sort})
             else:
                 self.curr_select = self.current_project.find(
-                {"date": {how: date},
-                "importance_marker": importance_marker,
-                "archived": need_arh_doc}).sort({'date': sort})
+                    {
+                        "date": {how: date},
+                        "archived": need_arh_doc
+                     },
+                ).sort({'date': sort})
 
         else:
             if how == 'eq':
                 self.curr_select = self.current_project.find(
-                {"date": date,
-                "importance_marker": importance_marker,
-                "archived": need_arh_doc}
+                    {
+                        "date": date,
+                        "archived": need_arh_doc
+                    },
                 ).sort({'date': sort}).limit(count)
             else:
                 self.curr_select = self.current_project.find(
-                {"date": {how: date},
-                "importance_marker": importance_marker,
-                "archived": need_arh_doc}
+                    {
+                        "date": {how: date},
+                        "archived": need_arh_doc
+                    },
                 ).sort({'date': sort}).limit(count)
         return self.curr_select
-        
 
-    def select_from_DB_search_by_range(self,
+    def select_search_by_range(self,
                                        count: int = 100,
                                        date_start: int = 0,
                                        date_finish: int = 2000000000,
@@ -105,17 +104,36 @@ class DB_management:
                                        need_arh_doc: bool = False,
                                        ) -> Dict:
         if count == 0:
-            self.curr_select = self.current_project.find({"date": 
-            {"$gt": date_start, "$lt": date_finish},
-            "importance_marker": importance_marker,
-            "archived": need_arh_doc}
+            self.curr_select = self.current_project.find(
+                {
+                    "date": {"$gt": date_start, "$lt": date_finish},
+                    "archived": need_arh_doc
+                },
             ).sort({'date': sort})
         else:
-            self.curr_select = self.current_project.find({"date": 
-            {"$gt": date_start, "$lt": date_finish},
-            "importance_marker": importance_marker,
-            "archived": need_arh_doc}
-            ).sort({'date': sort}).limit(count)
+            self.curr_select = self.current_project.find(
+                {
+                    "date": {"$gt": date_start, "$lt": date_finish},
+                    "archived": need_arh_doc
+                },
+            ).sort({'date': sort}
+                   ).limit(count)
+
+        return self.curr_select
+
+    def select_by_red_marker(self,
+                                     count: int = 100,
+                                     date: int = 0,
+                                     sort: int = 1,
+                                     need_arh_doc: bool = False
+                                     ) -> Dict:
+
+        self.curr_select = self.current_project.find(
+            {
+                "date": {'$gt': date}
+            },
+        ).sort({'date': sort}
+        ).limit(count)
         return self.curr_select
 
     def select_from_project(self,
@@ -127,13 +145,13 @@ class DB_management:
                             sort: int = 1,
                             need_arh_doc: bool = False,
                             ) -> Dict:
-        
+
         self.current_project = project_name
-        self.curr_select = self.select_from_DB_search_by(count,
-                                             how,
-                                             date,
-                                             importance_marker,
-                                             sort, need_arh_doc)
+        self.curr_select = self.select_from_DB(count,
+                                               how,
+                                               date,
+                                               importance_marker,
+                                               sort, need_arh_doc)
         return self.curr_select
 
     def select_from_project_by_range(self,
@@ -145,16 +163,18 @@ class DB_management:
                                      sort: int = 1,
                                      need_arh_doc: bool = False,
                                      ) -> Dict:
-        
+
         self.current_project = project_name
-        self.curr_select = self.select_from_DB_search_by_range(count,
-                                                   date_start,
-                                                   date_finish,
-                                                   importance_marker,
-                                                   sort,
-                                                   need_arh_doc)
+        self.curr_select = self.select_search_by_range(
+            count,
+            date_start,
+            date_finish,
+            importance_marker,
+            sort,
+            need_arh_doc,
+            )
         return self.curr_select
-    
+
     def archvate_docs(self,
                       project_name: str,
                       count: int = 100,
@@ -165,13 +185,14 @@ class DB_management:
                       need_arh_doc: bool = False,
                       ):
         self.current_project = project_name
-        for curr_doc in self.select_from_DB_search_by(count,
-                                             how,
-                                             date,
-                                             importance_marker,
-                                             sort, 
-                                             need_arh_doc):
-            curr_doc['archived'] = True   
+        for curr_doc in self.select_from_DB(
+                count,
+                how,
+                date,
+                importance_marker,
+                sort,
+                need_arh_doc):
+            curr_doc['archived'] = True
 
     def archvate_docs_by_range(self,
                                project_name: str,
@@ -181,21 +202,18 @@ class DB_management:
                                importance_marker: str = 'green',
                                sort: int = 1,
                                need_arh_doc: bool = False,
-                                ):
+                               ):
         self.current_project = project_name
-        for curr_doc in self.select_from_DB_search_by_range(count,
-                                                     date_start,
-                                                     date_finish,
-                                                     importance_marker,
-                                                     sort,
-                                                     need_arh_doc):
+        for curr_doc in self.select_search_by_range(
+                count,
+                date_start,
+                date_finish,
+                importance_marker,
+                sort,
+                need_arh_doc):
             curr_doc['archived'] = True
 
     def archived_curr_select(self):
 
         for curr_doc in self.curr_select:
             curr_doc['archived'] = True
-
-        
-    
-        
