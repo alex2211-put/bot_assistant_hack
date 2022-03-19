@@ -1,3 +1,4 @@
 owners:
-  - @alik_put
-url : "123"
+  - alik_put
+url : mongodb://mongodb0.example.com:27017
+

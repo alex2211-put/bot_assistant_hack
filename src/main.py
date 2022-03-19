@@ -9,6 +9,7 @@ from aiogram import executor
 from aiogram.dispatcher import Dispatcher
 from aiogram.types import BotCommand
 
+from DB.DB_management import DBManagement
 from bot.voice_recognizer import voice_model
 from bot.helpers import customer_funcs, project_funcs
 from bot.helpers import owner_funcs
@@ -38,6 +39,18 @@ async def set_commands(bot: Bot):
 def main():
     bot = Bot(token=read_yaml.get_token_tg())
     dispatcher = Dispatcher(bot)
+    data_base = DBManagement()
+    for doc in data_base.current_DB['projects_info'].find():
+        projects_info[doc['id']] = {
+            'name': doc['name'],
+            'main_message': doc['main_message'],
+            'recipients': doc['recipients'].split(),
+            'responsible': doc['responsible'].split(),
+        }
+        for responsible in doc['responsible'].split():
+            available_project_for_owner[responsible].add(doc['id'])
+        for recipient in doc['recipients'].split():
+            available_project_for_owner[recipient].add(doc['id'])
     logging.basicConfig(
         filename='main.log',
         level=logging.DEBUG,
@@ -45,15 +58,17 @@ def main():
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
-    projects_info[140691900203440] = {'name': 'a', 'main_message': 'whatever', 'messages': []}
+    projects_info[140691900203440] = {'name': 'a', 'main_message': 'whatever',
+                                      'messages': []}
     available_project_for_owner['a'] = {140691900203440}
     available_project_for_owner['IvanLudvig'] = {140691900203440}
     available_project_for_customer['a'] = {140691900203440}
-    person_states[342074576] = state_machine.ProjectStates.PROJECT_RECIPIENTS
+    person_states[853881966] = state_machine.ProjectStates.PROJECT_RECIPIENTS
 
     for i in range(100):
-        projects_info[140691900203440]['messages'].append({'id': i, 'text': 'message'+str(i), 'important': False, 'deleted': False})
-
+        projects_info[140691900203440]['messages'].append(
+            {'id': i, 'text': 'message' + str(i), 'important': False,
+             'deleted': False})
 
     @dispatcher.message_handler(commands=['start'])
     async def start(message):
@@ -199,6 +214,8 @@ def main():
             message.chat.id,
             text='Enter the message that each recipient will see',
         )
+        last_project_info[message.from_user.id][
+            'responsible'] += ' ' + message.from_user.username
         messages_to_delete.extend(
             [message.message_id, send_message.message_id]
         )
@@ -515,31 +532,50 @@ def main():
         for message_to_delete in messages_to_delete:
             await bot.delete_message(call.message.chat.id, message_to_delete)
         messages_to_delete.clear()
-        await owner_funcs.get_messages_num(bot, call, projects_info[int(project_id)], messages_to_delete)
+        await owner_funcs.get_messages_num(bot, call,
+                                           projects_info[int(project_id)],
+                                           messages_to_delete)
 
     @dispatcher.callback_query_handler(
         lambda call: call.data.split('_')[0] == 'markImportant')
     async def get_messages_num(call):
         project_id = int(call.data.split('_')[1])
         m_id = int(call.data.split('_')[2])
-        message = [m for m in projects_info[project_id]['messages'] if m['id']==m_id][0]
+        message = \
+            [m for m in projects_info[project_id]['messages'] if
+             m['id'] == m_id][0]
         message['important'] = not message['important']
         await owner_funcs.mark_important(bot, call, project_id, message)
 
+    @dispatcher.callback_query_handler(
+        lambda call: call.data.split('_')[0] == 'del')
+    async def delete_project(call):
+        project_id = int(call.data.split('_')[1])
+        project_name = projects_info[project_id]['name']
+        data_base.current_DB[project_name].delete_many({})
+        projects_info.pop(project_id)
+        username = call['from'].username
+        await owner_funcs.show_available_projects(
+            bot,
+            call,
+            available_project_for_owner[username],
+            projects_info,
+        )
 
     @dispatcher.callback_query_handler(
         lambda call: call.data.split('_')[0] == 'deleteMessage')
     async def delete_message(call):
         project_id = int(call.data.split('_')[1])
         m_id = int(call.data.split('_')[2])
-        message = [m for m in projects_info[project_id]['messages'] if m['id']==m_id][0]
+        message = \
+            [m for m in projects_info[project_id]['messages'] if
+             m['id'] == m_id][0]
         message['deleted'] = not message['deleted']
         messages_to_delete.remove(call.message.message_id)
         await bot.delete_message(call.message.chat.id, call.message.message_id)
 
     @dispatcher.callback_query_handler(lambda call: True)
     async def callback_inline(call):
-        print(call)
         if call.data == 'shutdown':
             # TODO: save everything into db
             sys.exit(0)

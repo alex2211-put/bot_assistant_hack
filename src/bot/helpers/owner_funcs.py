@@ -62,6 +62,7 @@ async def do_work_after_collecting_data(
         reply_markup=key,
     )
     data_base = DBManagement()
+    del project_info['start_message']
     data_base.insert_information_about_projects(
         project_info['name'],
         project_info,
@@ -72,12 +73,13 @@ async def show_available_projects(bot, call, available_projects, projects_info):
     key = types.InlineKeyboardMarkup(row_width=2)
     buts = []
     for available_project in available_projects:
-        buts.append(
-            types.InlineKeyboardButton(
-                text=projects_info[available_project]['name'],
-                callback_data='projectId_' + str(available_project),
+        if projects_info[available_project]:
+            buts.append(
+                types.InlineKeyboardButton(
+                    text=projects_info[available_project]['name'],
+                    callback_data='projectId_' + str(available_project),
+                )
             )
-        )
     but_1 = types.InlineKeyboardButton(text='🔙',
                                        callback_data='to_main_owner_page')
     key.add(*buts, but_1)
@@ -95,11 +97,11 @@ async def get_project_options(bot, call):
     but_1 = types.InlineKeyboardButton(text='Get messages',
                                        callback_data='getMessages_' + project_id)
     but_2 = types.InlineKeyboardButton(text='Recipients',
-                                       callback_data='recipients_' +project_id)
+                                       callback_data='recipients_' + project_id)
     but_3 = types.InlineKeyboardButton(text='Responsible',
-                                       callback_data='responsible_' +project_id)
+                                       callback_data='responsible_' + project_id)
     but_4 = types.InlineKeyboardButton(text='Delete ❌',
-                                       callback_data='del_' +project_id)
+                                       callback_data='del_' + project_id)
     but_5 = types.InlineKeyboardButton(text='🔙',
                                        callback_data='available_projects')
     key.add(but_1, but_2, but_3, but_4, but_5)
@@ -120,7 +122,8 @@ async def get_messages(bot, call):
                                        callback_data='getMessagesNum_' + project_id + '_50_0')
     but_3 = types.InlineKeyboardButton(text='Get all messages',
                                        callback_data='getMessagesNum_' + project_id + '_-1_0')
-    but_4 = types.InlineKeyboardButton(text='🔙', callback_data='projectId_' + project_id)
+    but_4 = types.InlineKeyboardButton(text='🔙',
+                                       callback_data='projectId_' + project_id)
 
     key.add(but_1, but_2, but_3)
     key.add(but_4)
@@ -134,10 +137,13 @@ async def get_messages(bot, call):
 
 def generate_message_key(project_id, m):
     message_key = types.InlineKeyboardMarkup()
-    btn1_text = 'Mark as unimportant' if m['important'] else '✅ Mark as important'
+    btn1_text = 'Mark as unimportant' if m[
+        'important'] else '✅ Mark as important'
     m_id = m['id']
-    mbut_1 = types.InlineKeyboardButton(text=btn1_text, callback_data=f'markImportant_{project_id}_{m_id}')
-    mbut_2 = types.InlineKeyboardButton(text='❌ Delete', callback_data=f'deleteMessage_{project_id}_{m_id}')
+    mbut_1 = types.InlineKeyboardButton(text=btn1_text,
+                                        callback_data=f'markImportant_{project_id}_{m_id}')
+    mbut_2 = types.InlineKeyboardButton(text='❌ Delete',
+                                        callback_data=f'deleteMessage_{project_id}_{m_id}')
     message_key.add(mbut_1, mbut_2)
     return message_key
 
@@ -149,38 +155,46 @@ async def get_messages_num(bot, call, project, messages_to_delete):
 
     print(project)
 
-    messages = [m for m in project['messages'] if not m['deleted']][page*num:(page+1)*num]
+    messages = [m for m in project['messages'] if not m['deleted']][
+               page * num:(page + 1) * num]
     if num == -1:
         messages = project['messages']
 
     key = types.InlineKeyboardMarkup()
-    but_1 = types.InlineKeyboardButton(text='<', callback_data=f'getMessagesNum_{project_id}_{num}_{page-1}')
-    but_2 = types.InlineKeyboardButton(text='🔙', callback_data='getMessages_' + project_id)
-    but_3 = types.InlineKeyboardButton(text='>', callback_data=f'getMessagesNum_{project_id}_{num}_{page+1}')
+    but_1 = types.InlineKeyboardButton(text='<',
+                                       callback_data=f'getMessagesNum_{project_id}_{num}_{page - 1}')
+    but_2 = types.InlineKeyboardButton(text='🔙',
+                                       callback_data='getMessages_' + project_id)
+    but_3 = types.InlineKeyboardButton(text='>',
+                                       callback_data=f'getMessagesNum_{project_id}_{num}_{page + 1}')
 
     if page > 0:
-        if (page + 1)*num<len(project['messages']):
+        if (page + 1) * num < len(project['messages']):
             key.add(but_1, but_2, but_3)
         else:
             key.add(but_1, but_2)
     else:
-        if (page + 1)*num<len(project['messages']) and num!=-1:
+        if (page + 1) * num < len(project['messages']) and num != -1:
             key.add(but_2, but_3)
         else:
             key.add(but_2)
 
     for m in messages:
-        message = await bot.send_message(call.message.chat.id, text=m['text'], reply_markup=generate_message_key(project_id, m))
+        message = await bot.send_message(call.message.chat.id, text=m['text'],
+                                         reply_markup=generate_message_key(
+                                             project_id, m))
         messages_to_delete.append(message.message_id)
 
-    message = await bot.send_message(call.message.chat.id, text='Navigation', reply_markup=key)
+    message = await bot.send_message(call.message.chat.id, text='Navigation',
+                                     reply_markup=key)
 
     messages_to_delete.append(message.message_id)
+
 
 async def mark_important(bot, call, project_id, m):
     text = ''
     if m['important']:
-        text = '✅'+call.message.text
+        text = '✅' + call.message.text
     else:
         text = call.message.text[1:]
     m['text'] = text

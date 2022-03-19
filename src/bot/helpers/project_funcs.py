@@ -21,7 +21,6 @@ def save_project_info(
         'recipients': last_project_info['recipients'].split(),
         'responsible': last_project_info['responsible'].split(),
     }
-    print('save', projects_info)
     # TODO: save to db
 
 

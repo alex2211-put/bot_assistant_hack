@@ -2,14 +2,14 @@ import pymongo
 from typing import Dict
 from typing import List
 
-import read_service
+from DB import read_service
 
 
 class DBManagement:
 
     def __init__(self):
         url = read_service.get_mongo_url()
-        self.client = pymongo.MongoClient(url)
+        self.client = pymongo.MongoClient("mongodb://localhost:27017/")
         self.current_DB = self.client["projects_issuses"]
 
     def connect_to_a_project(self, project_name: str):
@@ -63,8 +63,7 @@ class DBManagement:
             project_name: str,
             project_info: Dict,
     ):
-        self.projects_discr = self.client['projects_info']
-        project_info = {project_name: project_info}
+        self.projects_discr = self.current_DB["projects_info"]
         self.projects_discr.insert_one(project_info)
 
     def select_from_db(
