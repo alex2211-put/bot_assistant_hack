@@ -1,5 +1,5 @@
 from aiogram import types
-
+from DB.DB_management import DBManagement
 from bot.helpers import state_machine
 
 
@@ -61,6 +61,11 @@ async def do_work_after_collecting_data(
              f'https://t.me/mango_humans_assistant_bot',
         reply_markup=key,
     )
+    data_base = DBManagement()
+    data_base.insert_information_about_projects(
+        project_info['name'],
+        project_info,
+    )
 
 
 async def show_available_projects(bot, call, available_projects, projects_info):
@@ -115,7 +120,7 @@ async def get_messages(bot, call):
                                        callback_data='getMessagesNum_' + project_id + '_50_0')
     but_3 = types.InlineKeyboardButton(text='Get all messages',
                                        callback_data='getMessagesNum_' + project_id + '_-1_0')
-    but_4 = types.InlineKeyboardButton(text='Back', callback_data='projectId_' + project_id)
+    but_4 = types.InlineKeyboardButton(text='🔙', callback_data='projectId_' + project_id)
 
     key.add(but_1, but_2, but_3)
     key.add(but_4)
@@ -150,7 +155,7 @@ async def get_messages_num(bot, call, project, messages_to_delete):
 
     key = types.InlineKeyboardMarkup()
     but_1 = types.InlineKeyboardButton(text='<', callback_data=f'getMessagesNum_{project_id}_{num}_{page-1}')
-    but_2 = types.InlineKeyboardButton(text='Back', callback_data='getMessages_' + project_id)
+    but_2 = types.InlineKeyboardButton(text='🔙', callback_data='getMessages_' + project_id)
     but_3 = types.InlineKeyboardButton(text='>', callback_data=f'getMessagesNum_{project_id}_{num}_{page+1}')
 
     if page > 0:

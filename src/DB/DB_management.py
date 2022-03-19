@@ -35,8 +35,11 @@ class DBManagement:
 
         self.connect_to_a_project(project_name)
 
-        content_type, content_id = self._get_id(message)
-
+        if message.get("test") is None:
+            content_type, content_id = self._get_id(message)
+        else:
+            content_type = 'text'
+            content_id = None
         cur_dict = {
             "message_id": message["message_id"],
             "chat_id": message["chat"]["id"],
@@ -46,7 +49,7 @@ class DBManagement:
             "user_name": message["from"].get("user_name"),
             "date": message["date"],
             "importance_marker": importance_marker,
-            "message_text": message["text"],
+            "message_text": message.get("text"),
             "media_group_id": message.get(["media_group_id"]),
             "message_type": message_type,
             "content_type": content_type,
@@ -54,6 +57,15 @@ class DBManagement:
             "archived": False
         }
         self.current_project.insert_one(cur_dict)
+
+    def insert_information_about_projects(
+            self,
+            project_name: str,
+            project_info: Dict,
+    ):
+        self.projects_discr = self.client['projects_info']
+        project_info = {project_name: project_info}
+        self.projects_discr.insert_one(project_info)
 
     def select_from_db(
             self,
