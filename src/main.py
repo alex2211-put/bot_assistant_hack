@@ -53,7 +53,6 @@ def main():
 
     for i in range(100):
         projects_info[140691900203440]['messages'].append('message'+str(i))
-    
 
     @dispatcher.message_handler(commands=['start'])
     async def start(message):

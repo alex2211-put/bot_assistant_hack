@@ -1,5 +1,5 @@
 from aiogram import types
-from DB_management import DBManagement
+from DB.DB_management import DBManagement
 from bot.helpers import state_machine
 
 
@@ -60,14 +60,11 @@ async def do_work_after_collecting_data(
              f'Share this link with recipients: '
              f'https://t.me/mango_humans_assistant_bot',
         reply_markup=key,
-
-        DataBase = DBManagement
-        DataBase.insert_information_about_projects
-        (
-            project_info['name'], 
-            project_info,
-        )
-    
+    )
+    data_base = DBManagement()
+    data_base.insert_information_about_projects(
+        project_info['name'],
+        project_info,
     )
 
 
