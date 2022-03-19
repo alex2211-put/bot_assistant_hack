@@ -34,8 +34,9 @@ class DB_management:
                        ):
         
         self.connect_to_a_project(project_name)
-
-        content_type, content_id = self._get_id(message)
+        
+        if message.get("text") is None:
+            content_type, content_id = self._get_id(message)
 
         cur_dict = {"message_id": message["message_id"],
                     "chat_id": message["chat"]["id"],
@@ -45,7 +46,7 @@ class DB_management:
                     "user_name": message["from"].get("user_name"),
                     "date": message["date"],
                     "importance_marker": importance_marker,
-                    "message_text": message["text"],
+                    "message_text": message.get("text"),
                     "media_group_id": message.get(["media_group_id"]),
                     "message_type": message_type,
                     "content_type": content_type,
