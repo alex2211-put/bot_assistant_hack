@@ -20,3 +20,17 @@ def save_project_info(
         'main_message': last_project_info['main_message'],
     }
     # TODO: save to db
+
+
+def get_available_projects(
+        collection: typing.Dict,
+        user_name: str,
+        user_id: int,
+):
+    if collection.get(user_id) is None:
+        if collection.get(user_name):
+            collection[user_id] = collection.pop(user_name)
+        else:
+            return None
+    return collection[user_id]
+
