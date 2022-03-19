@@ -56,6 +56,16 @@ class DBManagement:
         }
         self.current_project.insert_one(cur_dict)
 
+    def insert_information_about_projects(
+            self,
+            project_name: str,
+            project_info: Dict,
+    ):
+        self.projects_discr = self.client['projects_info']
+        project_info = {project_name: project_info}
+        self.projects_discr.insert_one(project_info)
+
+
     def select_from_db(
             self,
             count: int = 100,
