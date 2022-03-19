@@ -34,10 +34,12 @@ class DBManagement:
     ):
 
         self.connect_to_a_project(project_name)
-        
+
         if message.get("test") is None:
             content_type, content_id = self._get_id(message)
-
+        else:
+            content_type = 'text'
+            content_id = None
         cur_dict = {
             "message_id": message["message_id"],
             "chat_id": message["chat"]["id"],
@@ -64,7 +66,6 @@ class DBManagement:
         self.projects_discr = self.client['projects_info']
         project_info = {project_name: project_info}
         self.projects_discr.insert_one(project_info)
-
 
     def select_from_db(
             self,
