@@ -115,8 +115,10 @@ async def get_messages(bot, call):
                                        callback_data='getMessagesNum_' + project_id + '_50_0')
     but_3 = types.InlineKeyboardButton(text='Get all messages',
                                        callback_data='getMessagesNum_' + project_id + '_-1_0')
+    but_4 = types.InlineKeyboardButton(text='Back', callback_data='projectId_' + project_id)
 
     key.add(but_1, but_2, but_3)
+    key.add(but_4)
     await bot.edit_message_text(
         chat_id=call.message.chat.id,
         message_id=call.message.message_id,
