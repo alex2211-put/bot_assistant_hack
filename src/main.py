@@ -3,7 +3,6 @@ import requests
 
 from aiogram import Bot
 from aiogram import executor
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import Dispatcher
 from aiogram.types import BotCommand
 
@@ -34,7 +33,7 @@ async def set_commands(bot: Bot):
 
 def main():
     bot = Bot(token=read_yaml.get_token_tg())
-    dispatcher = Dispatcher(bot, storage=MemoryStorage())
+    dispatcher = Dispatcher(bot)
     logging.basicConfig(
         filename='main.log',
         level=logging.DEBUG,
