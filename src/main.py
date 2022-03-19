@@ -1,13 +1,14 @@
+import collections
 import logging
 import requests
 
-from aiogram import Bot
+from aiogram import Bot, types
 from aiogram import executor
 from aiogram.dispatcher import Dispatcher
 from aiogram.types import BotCommand
 
 from bot.voice_recognizer import voice_model
-from bot.helpers import customer_funcs
+from bot.helpers import customer_funcs, project_funcs
 from bot.helpers import owner_funcs
 from bot.helpers import read_yaml
 from bot.helpers import state_machine
@@ -20,6 +21,9 @@ owners = [853881966]
 last_project_info = {}
 person_states = {}
 messages_to_delete = []
+available_project_for_customer = collections.defaultdict(set)
+available_project_for_owner = collections.defaultdict(set)
+projects_info = collections.defaultdict(dict)
 
 
 async def set_commands(bot: Bot):
@@ -128,6 +132,7 @@ def main():
     async def set_project_name(message):
         logger.info('Get text message %s', message)
         last_project_info['name'] = message.text
+        last_project_info['id'] = id(last_project_info['name'])
         person_states[message.from_user.id] = \
             state_machine.ProjectStates.PROJECT_DESCRIPTION
         send_message = await bot.send_message(
@@ -207,8 +212,26 @@ def main():
         await owner_funcs.do_work_after_collecting_data(
             bot, last_project_info, messages_to_delete, message.chat.id,
         )
+        project_funcs.save_project_info(
+            last_project_info=last_project_info,
+            available_project_for_customer=available_project_for_customer,
+            available_project_for_owner=available_project_for_owner,
+            projects_info=projects_info,
+        )
+        available_project_for_owner[message['from'].username].add(
+            last_project_info['id']
+        )
         await bot.delete_message(message.chat.id, message.message_id)
         messages_to_delete.clear()
+
+    @dispatcher.callback_query_handler(
+        lambda call: call.data.split('_')[0] == 'projectId')
+    async def get_project_options(call):
+        username = call['from'].username
+        if username in available_project_for_owner.keys():
+            await owner_funcs.get_project_options(bot, call)
+        else:
+            pass
 
     @dispatcher.callback_query_handler(lambda call: True)
     async def callback_inline(call):
@@ -222,6 +245,30 @@ def main():
             )
         elif call.data == 'to_main_owner_page':
             await owner_funcs.main_page(bot, call)
+        elif call.data == 'available_projects':
+            username = call['from'].username
+            if username in available_project_for_owner.keys():
+                await owner_funcs.show_available_projects(
+                    bot,
+                    call,
+                    available_project_for_owner[username],
+                    projects_info,
+                )
+            elif username in available_project_for_customer.keys():
+                pass
+            else:
+                key = types.InlineKeyboardMarkup()
+                but_1 = types.InlineKeyboardButton(
+                    text='🔙',
+                    callback_data='to_main_owner_page',
+                )
+                key.add(but_1)
+                await bot.edit_message_text(
+                    chat_id=call.message.chat.id,
+                    message_id=call.message.message_id,
+                    text='No projects available',
+                    reply_markup=key,
+                )
 
     @dispatcher.message_handler(content_types=['text'])
     async def text_mess(message):
