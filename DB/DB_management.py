@@ -26,10 +26,13 @@ class DB_management:
         return [content_type, content_id]
 
     def insert_into_DB(self,
+                       project_name,
                        message: Dict,
                        importance_marker: str,
                        message_type,
                        ):
+        
+        self.current_project = project_name
 
         content_type, content_id = self._get_id(message)
 
