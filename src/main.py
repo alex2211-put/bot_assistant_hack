@@ -20,7 +20,7 @@ from bot.helpers import state_machine
 
 logger = logging.getLogger(__name__)
 owners = [853881966]
-last_project_info = {}
+last_project_info = collections.defaultdict(dict)
 person_states = {}
 messages_to_delete = []
 available_project_for_customer = collections.defaultdict(set)
@@ -133,8 +133,9 @@ def main():
     )
     async def set_project_name(message):
         logger.info('Get text message %s', message)
-        last_project_info['name'] = message.text
-        last_project_info['id'] = id(last_project_info['name'])
+        last_project_info[message.from_user.id]['name'] = message.text
+        last_project_info[message.from_user.id]['id'] = id(
+            last_project_info[message.from_user.id]['name'])
         person_states[message.from_user.id] = \
             state_machine.ProjectStates.PROJECT_DESCRIPTION
         send_message = await bot.send_message(
@@ -152,7 +153,7 @@ def main():
     )
     async def set_project_description(message):
         logger.info('Get text message %s', message)
-        last_project_info['description'] = message.text
+        last_project_info[message.from_user.id]['description'] = message.text
         person_states[message.from_user.id] = \
             state_machine.ProjectStates.PROJECT_RESPONSIBLE
         send_message = await bot.send_message(
@@ -172,7 +173,7 @@ def main():
     )
     async def set_project_responsible(message):
         logger.info('Get text message %s', message)
-        last_project_info['responsible'] = message.text
+        last_project_info[message.from_user.id]['responsible'] = message.text
         person_states[message.from_user.id] = \
             state_machine.ProjectStates.PROJECT_MAIN_MESSAGE
         send_message = await bot.send_message(
@@ -191,7 +192,7 @@ def main():
     )
     async def set_project_main_message(message):
         logger.info('Get text message %s', message)
-        last_project_info['main_message'] = message.text
+        last_project_info[message.from_user.id]['main_message'] = message.text
         person_states[message.from_user.id] = \
             state_machine.ProjectStates.PROJECT_RECIPIENTS
         send_message = await bot.send_message(
@@ -210,20 +211,167 @@ def main():
     )
     async def set_project_recipients(message):
         logger.info('Get text message %s', message)
-        last_project_info['recipients'] = message.text
+        last_project_info[message.from_user.id][
+            'recipients'] = message.text
         await owner_funcs.do_work_after_collecting_data(
-            bot, last_project_info, messages_to_delete, message.chat.id,
+            bot, last_project_info[message.from_user.id], messages_to_delete,
+            message.chat.id,
         )
         project_funcs.save_project_info(
-            last_project_info=last_project_info,
+            last_project_info=last_project_info[message.from_user.id],
             available_project_for_customer=available_project_for_customer,
             available_project_for_owner=available_project_for_owner,
             projects_info=projects_info,
         )
         available_project_for_owner[message['from'].username].add(
-            last_project_info['id']
+            last_project_info[message.from_user.id]['id']
         )
         await bot.delete_message(message.chat.id, message.message_id)
+        messages_to_delete.clear()
+        person_states[message.from_user.id] = None
+
+    @dispatcher.message_handler(
+        lambda message: (
+                person_states[message.from_user.id] ==
+                state_machine.ProjectStates.ADD_RECIPIENTS
+        )
+    )
+    async def set_project_main_message(message):
+        project_id = int(last_project_info[message.from_user.id]['id'])
+        projects_info[project_id][
+            'recipients'].extend(message.text.split())
+        person_states[message.from_user.id] = None
+        key = types.InlineKeyboardMarkup()
+        but_1 = types.InlineKeyboardButton(text='Add ➕',
+                                           callback_data='addRecip_' +
+                                                         str(project_id))
+        but_2 = types.InlineKeyboardButton(text='Remove ➖',
+                                           callback_data='removeRec_' +
+                                                         str(project_id))
+        but_5 = types.InlineKeyboardButton(text='🔙',
+                                           callback_data='projectId_' +
+                                                         str(project_id))
+        key.add(but_1, but_2, but_5)
+        text = 'Recipients:\n'
+        for i in range(len(projects_info[project_id][
+                               'recipients'])):
+            text += f"{i + 1}) {projects_info[project_id]['recipients'][i]}\n"
+        await bot.send_message(
+            message.chat.id,
+            text=text,
+            reply_markup=key,
+        )
+        messages_to_delete.append(message.message_id)
+        for message_to_delete in messages_to_delete:
+            await bot.delete_message(message.chat.id, message_to_delete)
+        messages_to_delete.clear()
+
+    @dispatcher.message_handler(
+        lambda message: (
+                person_states[message.from_user.id] ==
+                state_machine.ProjectStates.REMOVE_RECIPIENTS
+        )
+    )
+    async def set_project_main_message(message):
+        project_id = int(last_project_info[message.from_user.id]['id'])
+        projects_info[project_id][
+            'recipients'].pop(int(message.text) - 1)
+        person_states[message.from_user.id] = None
+        key = types.InlineKeyboardMarkup()
+        but_1 = types.InlineKeyboardButton(text='Add ➕',
+                                           callback_data='addRecip_' +
+                                                         str(project_id))
+        but_2 = types.InlineKeyboardButton(text='Remove ➖',
+                                           callback_data='removeRec_' +
+                                                         str(project_id))
+        but_5 = types.InlineKeyboardButton(text='🔙',
+                                           callback_data='projectId_' +
+                                                         str(project_id))
+        key.add(but_1, but_2, but_5)
+        text = 'Recipients:\n'
+        for i in range(len(projects_info[project_id][
+                               'recipients'])):
+            text += f"{i + 1}) {projects_info[project_id]['recipients'][i]}\n"
+        await bot.send_message(
+            message.chat.id,
+            text=text,
+            reply_markup=key,
+        )
+        messages_to_delete.append(message.message_id)
+        for message_to_delete in messages_to_delete:
+            await bot.delete_message(message.chat.id, message_to_delete)
+        messages_to_delete.clear()
+
+    @dispatcher.message_handler(
+        lambda message: (
+                person_states[message.from_user.id] ==
+                state_machine.ProjectStates.ADD_RESPONSIBLE
+        )
+    )
+    async def set_project_main_message(message):
+        project_id = int(last_project_info[message.from_user.id]['id'])
+        projects_info[project_id][
+            'responsible'].extend(message.text.split())
+        person_states[message.from_user.id] = None
+        key = types.InlineKeyboardMarkup()
+        but_1 = types.InlineKeyboardButton(text='Add ➕',
+                                           callback_data='addResp_' +
+                                                         str(project_id))
+        but_2 = types.InlineKeyboardButton(text='Remove ➖',
+                                           callback_data='removeResp_' +
+                                                         str(project_id))
+        but_5 = types.InlineKeyboardButton(text='🔙',
+                                           callback_data='projectId_' +
+                                                         str(project_id))
+        key.add(but_1, but_2, but_5)
+        text = 'Responsible:\n'
+        for i in range(len(projects_info[project_id][
+                               'responsible'])):
+            text += f"{i + 1}) {projects_info[project_id]['responsible'][i]}\n"
+        await bot.send_message(
+            message.chat.id,
+            text=text,
+            reply_markup=key,
+        )
+        messages_to_delete.append(message.message_id)
+        for message_to_delete in messages_to_delete:
+            await bot.delete_message(message.chat.id, message_to_delete)
+        messages_to_delete.clear()
+
+    @dispatcher.message_handler(
+        lambda message: (
+                person_states[message.from_user.id] ==
+                state_machine.ProjectStates.REMOVE_RESPONSIBLE
+        )
+    )
+    async def set_project_main_message(message):
+        project_id = int(last_project_info[message.from_user.id]['id'])
+        projects_info[project_id][
+            'responsible'].pop(int(message.text) - 1)
+        person_states[message.from_user.id] = None
+        key = types.InlineKeyboardMarkup()
+        but_1 = types.InlineKeyboardButton(text='Add ➕',
+                                           callback_data='addResp_' +
+                                                         str(project_id))
+        but_2 = types.InlineKeyboardButton(text='Remove ➖',
+                                           callback_data='removeResp_' +
+                                                         str(project_id))
+        but_5 = types.InlineKeyboardButton(text='🔙',
+                                           callback_data='projectId_' +
+                                                         str(project_id))
+        key.add(but_1, but_2, but_5)
+        text = 'Responsible:\n'
+        for i in range(len(projects_info[project_id][
+                               'responsible'])):
+            text += f"{i + 1}) {projects_info[project_id]['responsible'][i]}\n"
+        await bot.send_message(
+            message.chat.id,
+            text=text,
+            reply_markup=key,
+        )
+        messages_to_delete.append(message.message_id)
+        for message_to_delete in messages_to_delete:
+            await bot.delete_message(message.chat.id, message_to_delete)
         messages_to_delete.clear()
 
     @dispatcher.callback_query_handler(
@@ -232,16 +380,124 @@ def main():
         username = call['from'].username
         if available_project_for_owner.get(username):
             await owner_funcs.get_project_options(bot, call)
+            last_project_info[call['from'].id] = {
+                'id': call.data.split('_')[-1]}
         else:
             pass
 
+    @dispatcher.callback_query_handler(
+        lambda call: call.data.split('_')[0] == 'recipients')
+    async def get_project_recipients(call):
+        key = types.InlineKeyboardMarkup()
+        but_1 = types.InlineKeyboardButton(text='Add ➕',
+                                           callback_data='addRecip_' +
+                                                         call.data.split('_')[
+                                                             -1])
+        but_2 = types.InlineKeyboardButton(text='Remove ➖',
+                                           callback_data='removeRec_' +
+                                                         call.data.split('_')[
+                                                             -1])
+        but_5 = types.InlineKeyboardButton(text='🔙',
+                                           callback_data='projectId_' +
+                                                         call.data.split('_')[
+                                                             -1])
+        key.add(but_1, but_2, but_5)
+        text = 'Recipients:\n'
+        for i in range(len(projects_info[int(call.data.split('_')[-1])][
+                               'recipients'])):
+            text += f"{i + 1}) {projects_info[int(call.data.split('_')[-1])]['recipients'][i]}\n"
+        await bot.edit_message_text(
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            text=text,
+            reply_markup=key,
+        )
+
+    @dispatcher.callback_query_handler(
+        lambda call: call.data.split('_')[0] == 'addRecip')
+    async def get_project_recipients(call):
+        person_states[call['from'].id] = \
+            state_machine.ProjectStates.ADD_RECIPIENTS
+        send_message = await bot.edit_message_text(
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            text='Enter extra recipients for this project separated by a space',
+        )
+        messages_to_delete.append(send_message.message_id)
+
+    @dispatcher.callback_query_handler(
+        lambda call: call.data.split('_')[0] == 'addResp')
+    async def get_project_recipients(call):
+        person_states[call['from'].id] = \
+            state_machine.ProjectStates.ADD_RESPONSIBLE
+        send_message = await bot.edit_message_text(
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            text='Enter extra responsible for this project separated by a space'
+        )
+        messages_to_delete.append(send_message.message_id)
+
+    @dispatcher.callback_query_handler(
+        lambda call: call.data.split('_')[0] == 'removeRec')
+    async def get_project_recipients(call):
+        person_states[call['from'].id] = \
+            state_machine.ProjectStates.REMOVE_RECIPIENTS
+        send_message = await bot.send_message(
+            chat_id=call.message.chat.id,
+            text='Enter index of recipients to delete:',
+        )
+        messages_to_delete.extend(
+            [send_message.message_id, call.message.message_id])
+
+    @dispatcher.callback_query_handler(
+        lambda call: call.data.split('_')[0] == 'removeResp')
+    async def get_project_recipients(call):
+        person_states[call['from'].id] = \
+            state_machine.ProjectStates.REMOVE_RESPONSIBLE
+        send_message = await bot.send_message(
+            chat_id=call.message.chat.id,
+            text='Enter index of responsible to delete:'
+        )
+        messages_to_delete.extend(
+            [send_message.message_id, call.message.message_id])
+
+    @dispatcher.callback_query_handler(
+        lambda call: call.data.split('_')[0] == 'responsible')
+    async def get_project_responsible(call):
+        key = types.InlineKeyboardMarkup()
+        but_1 = types.InlineKeyboardButton(text='Add ➕',
+                                           callback_data='addResp_' +
+                                                         call.data.split('_')[
+                                                             -1])
+        but_2 = types.InlineKeyboardButton(text='Remove ➖',
+                                           callback_data='removeResp_' +
+                                                         call.data.split('_')[
+                                                             -1])
+        but_3 = types.InlineKeyboardButton(text='🔙',
+                                           callback_data='projectId_' +
+                                                         call.data.split('_')[
+                                                             -1])
+        key.add(but_1, but_2, but_3)
+        text = 'Responsible:\n'
+        for i in range(len(projects_info[int(call.data.split('_')[-1])][
+                               'responsible'])):
+            text += f"{i + 1}) {projects_info[int(call.data.split('_')[-1])]['responsible'][i]}\n"
+        await bot.edit_message_text(
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            text=text,
+            reply_markup=key,
+        )
+
     @dispatcher.callback_query_handler(lambda call: True)
     async def callback_inline(call):
+        print(call)
         if call.data == 'shutdown':
             # TODO: save everything into db
             sys.exit(0)
         elif call.data == 'new_project':
-            last_project_info['start_message'] = call.message
+            last_project_info[call.message.chat.id][
+                'start_message'] = call.message
             await owner_funcs.create_project(
                 bot, call.message.chat.id, person_states, messages_to_delete
             )

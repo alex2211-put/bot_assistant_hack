@@ -7,3 +7,7 @@ class ProjectStates(enum.Enum):
     PROJECT_RESPONSIBLE = 'project_responsible'
     PROJECT_MAIN_MESSAGE = 'project_main_message'
     PROJECT_RECIPIENTS = 'project_recipients'
+    ADD_RESPONSIBLE = 'add_responsible'
+    ADD_RECIPIENTS = 'add_recipients'
+    REMOVE_RECIPIENTS = 'remove_recipients'
+    REMOVE_RESPONSIBLE = 'remove_responsible'

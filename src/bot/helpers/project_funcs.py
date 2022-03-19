@@ -18,5 +18,8 @@ def save_project_info(
     projects_info[last_project_info['id']] = {
         'name': last_project_info['name'],
         'main_message': last_project_info['main_message'],
+        'recipients': last_project_info['recipients'].split(),
+        'responsible': last_project_info['responsible'].split(),
     }
+    print('save', projects_info)
     # TODO: save to db
