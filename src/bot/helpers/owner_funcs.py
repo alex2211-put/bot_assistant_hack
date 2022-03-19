@@ -11,7 +11,7 @@ def get_main_key():
                                        callback_data="new_project")
     but_3 = types.InlineKeyboardButton(text="Owners",
                                        callback_data="add_owners")
-    but_4 = types.InlineKeyboardButton(text="Shutdown",
+    but_4 = types.InlineKeyboardButton(text="Shutdown 🚫",
                                        callback_data="shutdown")
     key.add(but_1, but_2, but_3, but_4)
     return key
@@ -93,7 +93,7 @@ async def show_available_projects(bot, call, available_projects, projects_info):
     )
 
 
-async def get_project_options(bot, call):
+async def get_project_options(bot, call, projects_info):
     key = types.InlineKeyboardMarkup()
     project_id = call.data.split('_')[-1]
     but_1 = types.InlineKeyboardButton(text='Get messages',
@@ -107,10 +107,14 @@ async def get_project_options(bot, call):
     but_5 = types.InlineKeyboardButton(text='🔙',
                                        callback_data='available_projects')
     key.add(but_1, but_2, but_3, but_4, but_5)
+    print(projects_info)
+    print(project_id)
+    text = 'Project description:\n' + projects_info[int(project_id)][
+        'description'] + '\n\n'
     await bot.edit_message_text(
         chat_id=call.message.chat.id,
         message_id=call.message.message_id,
-        text='Choose one of options:',
+        text=text + 'Choose one of options:',
         reply_markup=key,
     )
 
@@ -228,10 +232,19 @@ async def get_owners(bot, call, owners):
     )
 
 
+async def remove_owner(bot, call, person_states, messages_to_delete):
+    send_mess = await bot.send_message(
+        chat_id=call.message.chat.id,
+        text='Enter one owner to remove:'
+    )
+    person_states[call['from'].id] = state_machine.ProjectStates.REMOVE_OWNERS
+    messages_to_delete.extend([send_mess.message_id, call.message.message_id])
+
+
 async def add_owner(bot, call, person_states, messages_to_delete):
     send_mess = await bot.send_message(
         chat_id=call.message.chat.id,
-        text='Enter extra owners separated by a space:'
+        text='Enter index of owner to delete:'
     )
     person_states[call['from'].id] = state_machine.ProjectStates.ADD_OWNERS
     messages_to_delete.extend([send_mess.message_id, call.message.message_id])

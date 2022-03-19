@@ -20,6 +20,7 @@ def save_project_info(
         'main_message': last_project_info['main_message'],
         'recipients': last_project_info['recipients'].split(),
         'responsible': last_project_info['responsible'].split(),
+        'description': last_project_info['description'],
     }
     for responsible in last_project_info['responsible'].split():
         available_project_for_owner[responsible].add(last_project_info['id'])
