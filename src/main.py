@@ -1,15 +1,32 @@
-import requests
-from aiogram import Bot
-from aiogram.dispatcher import Dispatcher
-from aiogram import executor
-from bot.voice_recognizer import voice_model
-from bot.helpers import read_yaml
 import logging
+import requests
+
+from aiogram import Bot
+from aiogram import executor
+from aiogram.dispatcher import Dispatcher
+from aiogram.types import BotCommand
+
+from bot.voice_recognizer import voice_model
+from bot.helpers import customer_funcs
+from bot.helpers import owner_funcs
+from bot.helpers import read_yaml
+from bot.helpers import state_machine
 
 # TODO: think about how to save information about users -
 #  what project they write about and what they have to do with
 
 logger = logging.getLogger(__name__)
+owners = [853881966]
+last_project_info = {}
+person_states = {}
+messages_to_delete = []
+
+
+async def set_commands(bot: Bot):
+    commands = [
+        BotCommand(command="/start", description="Начать работу с ботом"),
+    ]
+    await bot.set_my_commands(commands)
 
 
 def main():
@@ -24,11 +41,13 @@ def main():
 
     @dispatcher.message_handler(commands=['start'])
     async def start(message):
+        await set_commands(bot)
         logger.info('Get /start command %s', message)
-        await bot.send_message(
-            message.chat.id,
-            text=f'Пришел объект {message}',
-        )
+        if message['from'].id in owners:
+            await owner_funcs.start_func(bot, message)
+        else:
+            await customer_funcs.start_func()
+        await bot.delete_message(message.chat.id, message.message_id)
 
     @dispatcher.message_handler(
         content_types=['video', 'photo', 'document', 'audio', 'location'],
@@ -99,6 +118,110 @@ def main():
         # TODO: return all projects - even archived ones
         # dbConnection = dbConnection()
         # dbConnection.archive_project(project)
+
+    @dispatcher.message_handler(
+        lambda message: (
+                person_states[message.from_user.id] ==
+                state_machine.ProjectStates.PROJECT_NAME
+        )
+    )
+    async def set_project_name(message):
+        logger.info('Get text message %s', message)
+        last_project_info['name'] = message.text
+        person_states[message.from_user.id] = \
+            state_machine.ProjectStates.PROJECT_DESCRIPTION
+        send_message = await bot.send_message(
+            message.chat.id, text='Enter description of project',
+        )
+        messages_to_delete.extend(
+            [message.message_id, send_message.message_id]
+        )
+
+    @dispatcher.message_handler(
+        lambda message: (
+                person_states[message.from_user.id] ==
+                state_machine.ProjectStates.PROJECT_DESCRIPTION
+        )
+    )
+    async def set_project_description(message):
+        logger.info('Get text message %s', message)
+        last_project_info['description'] = message.text
+        person_states[message.from_user.id] = \
+            state_machine.ProjectStates.PROJECT_RESPONSIBLE
+        send_message = await bot.send_message(
+            message.chat.id,
+            text='Enter the responsible people separated by a space.\n'
+                 'For example: @person1 @person2',
+        )
+        messages_to_delete.extend(
+            [message.message_id, send_message.message_id]
+        )
+
+    @dispatcher.message_handler(
+        lambda message: (
+                person_states[message.from_user.id] ==
+                state_machine.ProjectStates.PROJECT_RESPONSIBLE
+        )
+    )
+    async def set_project_responsible(message):
+        logger.info('Get text message %s', message)
+        last_project_info['responsible'] = message.text
+        person_states[message.from_user.id] = \
+            state_machine.ProjectStates.PROJECT_MAIN_MESSAGE
+        send_message = await bot.send_message(
+            message.chat.id,
+            text='Enter the message that each recipient will see',
+        )
+        messages_to_delete.extend(
+            [message.message_id, send_message.message_id]
+        )
+
+    @dispatcher.message_handler(
+        lambda message: (
+                person_states[message.from_user.id] ==
+                state_machine.ProjectStates.PROJECT_MAIN_MESSAGE
+        )
+    )
+    async def set_project_main_message(message):
+        logger.info('Get text message %s', message)
+        last_project_info['main_message'] = message.text
+        person_states[message.from_user.id] = \
+            state_machine.ProjectStates.PROJECT_RECIPIENTS
+        send_message = await bot.send_message(
+            message.chat.id,
+            text='Enter the recipients people separated by a space',
+        )
+        messages_to_delete.extend(
+            [message.message_id, send_message.message_id]
+        )
+
+    @dispatcher.message_handler(
+        lambda message: (
+                person_states[message.from_user.id] ==
+                state_machine.ProjectStates.PROJECT_RECIPIENTS
+        )
+    )
+    async def set_project_recipients(message):
+        logger.info('Get text message %s', message)
+        last_project_info['recipients'] = message.text
+        await owner_funcs.do_work_after_collecting_data(
+            bot, last_project_info, messages_to_delete, message.chat.id,
+        )
+        await bot.delete_message(message.chat.id, message.message_id)
+        messages_to_delete.clear()
+
+    @dispatcher.callback_query_handler(lambda call: True)
+    async def callback_inline(call):
+        if call.data == 'shutdown':
+            # TODO: save everything into db
+            exit(0)
+        elif call.data == 'new_project':
+            last_project_info['start_message'] = call.message
+            await owner_funcs.create_project(
+                bot, call.message.chat.id, person_states, messages_to_delete
+            )
+        elif call.data == 'to_main_owner_page':
+            await owner_funcs.main_page(bot, call)
 
     @dispatcher.message_handler(content_types=['text'])
     async def text_mess(message):
