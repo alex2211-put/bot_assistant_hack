@@ -1,2 +1,2 @@
-async def start_func(bot, message):
+async def start_func():
     pass

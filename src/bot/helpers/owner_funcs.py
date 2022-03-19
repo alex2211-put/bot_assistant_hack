@@ -34,7 +34,7 @@ async def main_page(bot, call):
 
 
 async def create_project(bot, person_id, person_states, messages_to_delete):
-    person_states[person_id] = state_machine.ProjectStates.project_name
+    person_states[person_id] = state_machine.ProjectStates.PROJECT_NAME
     send_message = await bot.send_message(person_id, 'Enter the project name:')
     messages_to_delete.append(send_message.message_id)
 

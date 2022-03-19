@@ -25,7 +25,6 @@ messages_to_delete = []
 async def set_commands(bot: Bot):
     commands = [
         BotCommand(command="/start", description="Начать работу с ботом"),
-        # BotCommand(command="/food", description="Заказать блюда"),
     ]
     await bot.set_my_commands(commands)
 
@@ -47,7 +46,7 @@ def main():
         if message['from'].id in owners:
             await owner_funcs.start_func(bot, message)
         else:
-            await customer_funcs.start_func(bot, message)
+            await customer_funcs.start_func()
         await bot.delete_message(message.chat.id, message.message_id)
 
     @dispatcher.message_handler(
@@ -123,14 +122,14 @@ def main():
     @dispatcher.message_handler(
         lambda message: (
                 person_states[message.from_user.id] ==
-                state_machine.ProjectStates.project_name
+                state_machine.ProjectStates.PROJECT_NAME
         )
     )
-    async def text_mess(message):
+    async def set_project_name(message):
         logger.info('Get text message %s', message)
         last_project_info['name'] = message.text
         person_states[message.from_user.id] = \
-            state_machine.ProjectStates.project_description
+            state_machine.ProjectStates.PROJECT_DESCRIPTION
         send_message = await bot.send_message(
             message.chat.id, text='Enter description of project',
         )
@@ -141,14 +140,14 @@ def main():
     @dispatcher.message_handler(
         lambda message: (
                 person_states[message.from_user.id] ==
-                state_machine.ProjectStates.project_description
+                state_machine.ProjectStates.PROJECT_DESCRIPTION
         )
     )
-    async def text_mess(message):
+    async def set_project_description(message):
         logger.info('Get text message %s', message)
         last_project_info['description'] = message.text
         person_states[message.from_user.id] = \
-            state_machine.ProjectStates.project_responsible
+            state_machine.ProjectStates.PROJECT_RESPONSIBLE
         send_message = await bot.send_message(
             message.chat.id,
             text='Enter the responsible people separated by a space.\n'
@@ -161,14 +160,14 @@ def main():
     @dispatcher.message_handler(
         lambda message: (
                 person_states[message.from_user.id] ==
-                state_machine.ProjectStates.project_responsible
+                state_machine.ProjectStates.PROJECT_RESPONSIBLE
         )
     )
-    async def text_mess3(message):
+    async def set_project_responsible(message):
         logger.info('Get text message %s', message)
         last_project_info['responsible'] = message.text
         person_states[message.from_user.id] = \
-            state_machine.ProjectStates.project_main_message
+            state_machine.ProjectStates.PROJECT_MAIN_MESSAGE
         send_message = await bot.send_message(
             message.chat.id,
             text='Enter the message that each recipient will see',
@@ -180,14 +179,14 @@ def main():
     @dispatcher.message_handler(
         lambda message: (
                 person_states[message.from_user.id] ==
-                state_machine.ProjectStates.project_main_message
+                state_machine.ProjectStates.PROJECT_MAIN_MESSAGE
         )
     )
-    async def text_mess(message):
+    async def set_project_main_message(message):
         logger.info('Get text message %s', message)
         last_project_info['main_message'] = message.text
         person_states[message.from_user.id] = \
-            state_machine.ProjectStates.project_recipients
+            state_machine.ProjectStates.PROJECT_RECIPIENTS
         send_message = await bot.send_message(
             message.chat.id,
             text='Enter the recipients people separated by a space',
@@ -199,14 +198,12 @@ def main():
     @dispatcher.message_handler(
         lambda message: (
                 person_states[message.from_user.id] ==
-                state_machine.ProjectStates.project_recipients
+                state_machine.ProjectStates.PROJECT_RECIPIENTS
         )
     )
-    async def text_mess(message):
+    async def set_project_recipients(message):
         logger.info('Get text message %s', message)
         last_project_info['recipients'] = message.text
-        person_states[message.from_user.id] = \
-            state_machine.ProjectStates.all_done
         await owner_funcs.do_work_after_collecting_data(
             bot, last_project_info, messages_to_delete, message.chat.id,
         )
@@ -228,7 +225,6 @@ def main():
 
     @dispatcher.message_handler(content_types=['text'])
     async def text_mess(message):
-        state = dispatcher.current_state(user=message.from_user.id)
         logger.info('Get text message %s', message)
         # TODO: if it is currently in the project,
         #  throw his message into the database

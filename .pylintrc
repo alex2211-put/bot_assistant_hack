@@ -4,3 +4,4 @@ disable=
     C0116, # missing-function-docstring
     W0511, # fixme
     E0401, # import-error
+    C0115, # missing-class-docstring
