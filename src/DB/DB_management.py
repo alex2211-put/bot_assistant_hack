@@ -35,6 +35,8 @@ class DBManagement:
 
         self.connect_to_a_project(project_name)
 
+
+
         content_type, content_id = self._get_id(message)
 
         cur_dict = {
@@ -54,6 +56,16 @@ class DBManagement:
             "archived": False
         }
         self.current_project.insert_one(cur_dict)
+
+    def insert_information_about_projects(
+            self,
+            project_name: str,
+            project_info: Dict,
+    ):
+        self.projects_discr = self.client['projects_info']
+        project_info = {project_name: project_info}
+        self.projects_discr.insert_one(project_info)
+
 
     def select_from_db(
             self,
