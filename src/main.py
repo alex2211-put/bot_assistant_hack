@@ -230,7 +230,7 @@ def main():
         lambda call: call.data.split('_')[0] == 'projectId')
     async def get_project_options(call):
         username = call['from'].username
-        if username in available_project_for_owner.keys():
+        if available_project_for_owner.get(username):
             await owner_funcs.get_project_options(bot, call)
         else:
             pass
@@ -249,14 +249,14 @@ def main():
             await owner_funcs.main_page(bot, call)
         elif call.data == 'available_projects':
             username = call['from'].username
-            if username in available_project_for_owner.keys():
+            if available_project_for_owner.get(username):
                 await owner_funcs.show_available_projects(
                     bot,
                     call,
                     available_project_for_owner[username],
                     projects_info,
                 )
-            elif username in available_project_for_customer.keys():
+            elif available_project_for_customer.get(username):
                 pass
             else:
                 key = types.InlineKeyboardMarkup()
