@@ -52,7 +52,8 @@ def main():
     person_states[342074576] = state_machine.ProjectStates.PROJECT_RECIPIENTS
 
     for i in range(100):
-        projects_info[140691900203440]['messages'].append('message'+str(i))
+        projects_info[140691900203440]['messages'].append({'id': i, 'text': 'message'+str(i), 'important': False, 'deleted': False})
+
 
     @dispatcher.message_handler(commands=['start'])
     async def start(message):
@@ -515,6 +516,26 @@ def main():
             await bot.delete_message(call.message.chat.id, message_to_delete)
         messages_to_delete.clear()
         await owner_funcs.get_messages_num(bot, call, projects_info[int(project_id)], messages_to_delete)
+
+    @dispatcher.callback_query_handler(
+        lambda call: call.data.split('_')[0] == 'markImportant')
+    async def get_messages_num(call):
+        project_id = int(call.data.split('_')[1])
+        m_id = int(call.data.split('_')[2])
+        message = [m for m in projects_info[project_id]['messages'] if m['id']==m_id][0]
+        message['important'] = not message['important']
+        await owner_funcs.mark_important(bot, call, project_id, message)
+
+
+    @dispatcher.callback_query_handler(
+        lambda call: call.data.split('_')[0] == 'deleteMessage')
+    async def delete_message(call):
+        project_id = int(call.data.split('_')[1])
+        m_id = int(call.data.split('_')[2])
+        message = [m for m in projects_info[project_id]['messages'] if m['id']==m_id][0]
+        message['deleted'] = not message['deleted']
+        messages_to_delete.remove(call.message.message_id)
+        await bot.delete_message(call.message.chat.id, call.message.message_id)
 
     @dispatcher.callback_query_handler(lambda call: True)
     async def callback_inline(call):

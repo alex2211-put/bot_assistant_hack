@@ -132,6 +132,16 @@ async def get_messages(bot, call):
     )
 
 
+def generate_message_key(project_id, m):
+    message_key = types.InlineKeyboardMarkup()
+    btn1_text = 'Mark as unimportant' if m['important'] else '✅ Mark as important'
+    m_id = m['id']
+    mbut_1 = types.InlineKeyboardButton(text=btn1_text, callback_data=f'markImportant_{project_id}_{m_id}')
+    mbut_2 = types.InlineKeyboardButton(text='❌ Delete', callback_data=f'deleteMessage_{project_id}_{m_id}')
+    message_key.add(mbut_1, mbut_2)
+    return message_key
+
+
 async def get_messages_num(bot, call, project, messages_to_delete):
     project_id = call.data.split('_')[1]
     num = int(call.data.split('_')[2])
@@ -139,7 +149,7 @@ async def get_messages_num(bot, call, project, messages_to_delete):
 
     print(project)
 
-    messages = project['messages'][page*num:(page+1)*num]
+    messages = [m for m in project['messages'] if not m['deleted']][page*num:(page+1)*num]
     if num == -1:
         messages = project['messages']
 
@@ -160,10 +170,23 @@ async def get_messages_num(bot, call, project, messages_to_delete):
             key.add(but_2)
 
     for m in messages:
-        message = await bot.send_message(call.message.chat.id, text=m)
+        message = await bot.send_message(call.message.chat.id, text=m['text'], reply_markup=generate_message_key(project_id, m))
         messages_to_delete.append(message.message_id)
 
     message = await bot.send_message(call.message.chat.id, text='Navigation', reply_markup=key)
 
     messages_to_delete.append(message.message_id)
 
+async def mark_important(bot, call, project_id, m):
+    text = ''
+    if m['important']:
+        text = '✅'+call.message.text
+    else:
+        text = call.message.text[1:]
+    m['text'] = text
+    await bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text=text,
+        reply_markup=generate_message_key(project_id, m),
+    )
