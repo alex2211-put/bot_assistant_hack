@@ -77,6 +77,14 @@ def main():
             text=f'Пришел контент {message}',
         )
 
+    @dispatcher.callback_query_handler(
+        lambda call: call.data.split('_')[0] == 'getMessages')
+    async def get_messages(call):
+        for message_to_delete in messages_to_delete:
+            await bot.delete_message(call.message.chat.id, message_to_delete)
+        messages_to_delete.clear()
+        await owner_funcs.get_messages(bot, call)
+
     @dispatcher.message_handler(content_types=['voice'])
     async def voice_mess(message):
         # TODO: based on what we have recognized, do something
