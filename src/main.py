@@ -26,7 +26,6 @@ async def set_commands(bot: Bot):
     commands = [
         BotCommand(command="/start", description="Начать работу с ботом"),
         # BotCommand(command="/food", description="Заказать блюда"),
-        # BotCommand(command="/cancel", description="Отменить текущее действие")
     ]
     await bot.set_my_commands(commands)
 
@@ -135,7 +134,9 @@ def main():
         send_message = await bot.send_message(
             message.chat.id, text='Enter description of project',
         )
-        messages_to_delete.extend([message.message_id, send_message.message_id])
+        messages_to_delete.extend(
+            [message.message_id, send_message.message_id]
+        )
 
     @dispatcher.message_handler(
         lambda message: (
@@ -153,7 +154,9 @@ def main():
             text='Enter the responsible people separated by a space.\n'
                  'For example: @person1 @person2',
         )
-        messages_to_delete.extend([message.message_id, send_message.message_id])
+        messages_to_delete.extend(
+            [message.message_id, send_message.message_id]
+        )
 
     @dispatcher.message_handler(
         lambda message: (
@@ -170,7 +173,9 @@ def main():
             message.chat.id,
             text='Enter the message that each recipient will see',
         )
-        messages_to_delete.extend([message.message_id, send_message.message_id])
+        messages_to_delete.extend(
+            [message.message_id, send_message.message_id]
+        )
 
     @dispatcher.message_handler(
         lambda message: (
@@ -187,7 +192,9 @@ def main():
             message.chat.id,
             text='Enter the recipients people separated by a space',
         )
-        messages_to_delete.extend([message.message_id, send_message.message_id])
+        messages_to_delete.extend(
+            [message.message_id, send_message.message_id]
+        )
 
     @dispatcher.message_handler(
         lambda message: (
