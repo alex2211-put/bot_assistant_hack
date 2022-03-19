@@ -1,5 +1,7 @@
 import collections
 import logging
+import sys
+
 import requests
 
 from aiogram import Bot, types
@@ -237,7 +239,7 @@ def main():
     async def callback_inline(call):
         if call.data == 'shutdown':
             # TODO: save everything into db
-            exit(0)
+            sys.exit(0)
         elif call.data == 'new_project':
             last_project_info['start_message'] = call.message
             await owner_funcs.create_project(

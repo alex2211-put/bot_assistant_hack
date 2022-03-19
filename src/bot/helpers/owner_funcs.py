@@ -63,7 +63,7 @@ async def do_work_after_collecting_data(
 
 async def show_available_projects(bot, call, available_projects, projects_info):
     key = types.InlineKeyboardMarkup(row_width=2)
-    buts = list()
+    buts = []
     for available_project in available_projects:
         buts.append(
             types.InlineKeyboardButton(
