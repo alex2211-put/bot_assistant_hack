@@ -8,10 +8,10 @@ import read_service
 
 class DB_management:
 
-    def __init__(self, DB_name: str):
+    def __init__(self):
         url = read_service.get_mongo_url()
         self.client = pymongo.MongoClient(url)
-        self.current_DB = self.client[DB_name]
+        self.current_DB = self.client["projects_issuses"]
 
     def connect_to_a_project(self, project_name: str):
         self.current_project = self.current_DB[project_name]
