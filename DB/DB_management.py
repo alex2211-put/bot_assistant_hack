@@ -1,17 +1,14 @@
 import pymongo
 from typing import Dict
 from typing import List
-import get_url
-#1 - url из конфига
-#2 - выборка по имени проекта
-#3 - перегрузить класс для lt, gt
-#4 - сделать запись архивной
+import read_service
+
 
 
 class DB_management:
 
     def __init__(self, DB_name: str):
-        url = get_url.get_url()
+        url = read_service.get_mongo_url()
         self.client = pymongo.MongoClient(url)
         self.current_DB = self.client[DB_name]
 

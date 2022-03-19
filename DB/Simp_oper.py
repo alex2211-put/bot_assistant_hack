@@ -1,5 +1,7 @@
-import enum
 import attr
+import enum
+
+
 @attr.dataclass(frozen=True)
 class Simp_oper():
     
@@ -11,5 +13,3 @@ class Simp_oper():
         return 'eq'
 
 
-
-print(Simp_oper.less())
