@@ -21,7 +21,10 @@ def save_project_info(
         'recipients': last_project_info['recipients'].split(),
         'responsible': last_project_info['responsible'].split(),
     }
-    # TODO: save to db
+    for responsible in last_project_info['responsible'].split():
+        available_project_for_owner[responsible].add(last_project_info['id'])
+    for recipient in last_project_info['recipients'].split():
+        available_project_for_owner[recipient].add(last_project_info['id'])
 
 
 def get_available_projects(
@@ -35,4 +38,3 @@ def get_available_projects(
         else:
             return None
     return collection[user_id]
-

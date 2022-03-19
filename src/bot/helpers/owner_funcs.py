@@ -9,9 +9,11 @@ def get_main_key():
                                        callback_data="available_projects")
     but_2 = types.InlineKeyboardButton(text="New project",
                                        callback_data="new_project")
-    but_3 = types.InlineKeyboardButton(text="Shutdown",
+    but_3 = types.InlineKeyboardButton(text="Owners",
+                                       callback_data="add_owners")
+    but_4 = types.InlineKeyboardButton(text="Shutdown",
                                        callback_data="shutdown")
-    key.add(but_1, but_2, but_3)
+    key.add(but_1, but_2, but_3, but_4)
     return key
 
 
@@ -204,3 +206,32 @@ async def mark_important(bot, call, project_id, m):
         text=text,
         reply_markup=generate_message_key(project_id, m),
     )
+
+
+async def get_owners(bot, call, owners):
+    text = 'Owners:\n'
+    key = types.InlineKeyboardMarkup()
+    but_1 = types.InlineKeyboardButton(text='Add ➕',
+                                       callback_data='addOwners')
+    but_2 = types.InlineKeyboardButton(text='Remove ➖',
+                                       callback_data='removeOwners')
+    but_3 = types.InlineKeyboardButton(text='🔙',
+                                       callback_data='add_owners')
+    key.add(but_1, but_2, but_3)
+    for i in range(len(owners)):
+        text += f'{i + 1}) {owners[i]}\n'
+    await bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text=text,
+        reply_markup=key,
+    )
+
+
+async def add_owner(bot, call, person_states, messages_to_delete):
+    send_mess = await bot.send_message(
+        chat_id=call.message.chat.id,
+        text='Enter extra owners separated by a space:'
+    )
+    person_states[call['from'].id] = state_machine.ProjectStates.ADD_OWNERS
+    messages_to_delete.extend([send_mess.message_id, call.message.message_id])

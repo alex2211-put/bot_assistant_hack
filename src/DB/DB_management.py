@@ -9,7 +9,7 @@ class DBManagement:
 
     def __init__(self):
         url = read_service.get_mongo_url()
-        self.client = pymongo.MongoClient("mongodb://localhost:27017/")
+        self.client = pymongo.MongoClient(url)
         self.current_DB = self.client["projects_issuses"]
 
     def connect_to_a_project(self, project_name: str):

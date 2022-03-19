@@ -9,6 +9,7 @@ from aiogram import executor
 from aiogram.dispatcher import Dispatcher
 from aiogram.types import BotCommand
 
+from DB import read_service
 from DB.DB_management import DBManagement
 from bot.voice_recognizer import voice_model
 from bot.helpers import customer_funcs, project_funcs
@@ -20,7 +21,7 @@ from bot.helpers import state_machine
 #  what project they write about and what they have to do with
 
 logger = logging.getLogger(__name__)
-owners = [853881966]
+owners = read_service.get_owners()
 last_project_info = collections.defaultdict(dict)
 person_states = {}
 messages_to_delete = []
@@ -75,7 +76,7 @@ def main():
         await set_commands(bot)
         logger.info('Get /start command %s', message)
 
-        if message['from'].id in owners:
+        if message['from'].username in owners:
             await owner_funcs.start_func(bot, message)
         else:
             await customer_funcs.start_func()
@@ -276,6 +277,8 @@ def main():
         project_id = int(last_project_info[message.from_user.id]['id'])
         projects_info[project_id][
             'recipients'].extend(message.text.split())
+        for recip in message.text.split():
+            available_project_for_customer[recip].add(project_id)
         person_states[message.from_user.id] = None
         key = types.InlineKeyboardMarkup()
         but_1 = types.InlineKeyboardButton(text='Add ➕',
@@ -305,13 +308,45 @@ def main():
     @dispatcher.message_handler(
         lambda message: (
                 person_states[message.from_user.id] ==
+                state_machine.ProjectStates.ADD_OWNERS
+        )
+    )
+    async def set_project_main_message(message):
+        owners.extend(message.text.split())
+        person_states[message.from_user.id] = None
+        key = types.InlineKeyboardMarkup()
+        but_1 = types.InlineKeyboardButton(text='Add ➕',
+                                           callback_data='addOwners')
+        but_2 = types.InlineKeyboardButton(text='Remove ➖',
+                                           callback_data='removeOwners')
+        but_5 = types.InlineKeyboardButton(text='🔙',
+                                           callback_data='add_owners')
+        key.add(but_1, but_2, but_5)
+        text = 'Owners:\n'
+        for i in range(len(owners)):
+            text += f'{i + 1}) {owners[i]}\n'
+        await bot.send_message(
+            chat_id=message.chat.id,
+            text=text,
+            reply_markup=key,
+        )
+        messages_to_delete.append(message.message_id)
+        for message_to_delete in messages_to_delete:
+            await bot.delete_message(message.chat.id, message_to_delete)
+        messages_to_delete.clear()
+        read_service.set_owners(owners)
+
+    @dispatcher.message_handler(
+        lambda message: (
+                person_states[message.from_user.id] ==
                 state_machine.ProjectStates.REMOVE_RECIPIENTS
         )
     )
     async def set_project_main_message(message):
         project_id = int(last_project_info[message.from_user.id]['id'])
-        projects_info[project_id][
+        recip = projects_info[project_id][
             'recipients'].pop(int(message.text) - 1)
+        available_project_for_customer[recip].remove(project_id)
         person_states[message.from_user.id] = None
         key = types.InlineKeyboardMarkup()
         but_1 = types.InlineKeyboardButton(text='Add ➕',
@@ -348,6 +383,8 @@ def main():
         project_id = int(last_project_info[message.from_user.id]['id'])
         projects_info[project_id][
             'responsible'].extend(message.text.split())
+        for resp in message.text.split():
+            available_project_for_customer[resp].add(project_id)
         person_states[message.from_user.id] = None
         key = types.InlineKeyboardMarkup()
         but_1 = types.InlineKeyboardButton(text='Add ➕',
@@ -382,8 +419,9 @@ def main():
     )
     async def set_project_main_message(message):
         project_id = int(last_project_info[message.from_user.id]['id'])
-        projects_info[project_id][
+        resp = projects_info[project_id][
             'responsible'].pop(int(message.text) - 1)
+        available_project_for_owner[resp].remove(project_id)
         person_states[message.from_user.id] = None
         key = types.InlineKeyboardMarkup()
         but_1 = types.InlineKeyboardButton(text='Add ➕',
@@ -587,6 +625,11 @@ def main():
             )
         elif call.data == 'to_main_owner_page':
             await owner_funcs.main_page(bot, call)
+        elif call.data == 'add_owners':
+            await owner_funcs.get_owners(bot, call, owners)
+        elif call.data == 'addOwners':
+            await owner_funcs.add_owner(bot, call, person_states,
+                                        messages_to_delete)
         elif call.data == 'available_projects':
             username = call['from'].username
             if available_project_for_owner.get(username):

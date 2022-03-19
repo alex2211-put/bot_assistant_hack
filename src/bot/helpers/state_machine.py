@@ -11,3 +11,4 @@ class ProjectStates(enum.Enum):
     ADD_RECIPIENTS = 'add_recipients'
     REMOVE_RECIPIENTS = 'remove_recipients'
     REMOVE_RESPONSIBLE = 'remove_responsible'
+    ADD_OWNERS = 'add_owners'
