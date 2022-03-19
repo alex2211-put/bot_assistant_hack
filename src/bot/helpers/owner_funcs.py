@@ -56,7 +56,9 @@ async def do_work_after_collecting_data(
              f'Description: {project_info["description"]}\n'
              f'Responsible: {project_info["responsible"]}\n'
              f'Main message: {project_info["main_message"]}\n'
-             f'Recipients: {project_info["recipients"]}',
+             f'Recipients: {project_info["recipients"]}\n\n'
+             f'Share this link with recipients: '
+             f'https://t.me/mango_humans_assistant_bot',
         reply_markup=key,
     )
 
@@ -84,15 +86,21 @@ async def show_available_projects(bot, call, available_projects, projects_info):
 
 async def get_project_options(bot, call):
     key = types.InlineKeyboardMarkup()
-    but_1 = types.InlineKeyboardButton(text='Get all messages',
+    but_1 = types.InlineKeyboardButton(text='Get messages',
                                        callback_data='allMess_' +
                                                      call.data.split('_')[-1])
-    but_2 = types.InlineKeyboardButton(text='Delete ❌',
+    but_2 = types.InlineKeyboardButton(text='Recipients',
+                                       callback_data='recipients_' +
+                                                     call.data.split('_')[-1])
+    but_3 = types.InlineKeyboardButton(text='Responsible',
+                                       callback_data='responsible_' +
+                                                     call.data.split('_')[-1])
+    but_4 = types.InlineKeyboardButton(text='Delete ❌',
                                        callback_data='del_' +
                                                      call.data.split('_')[-1])
-    but_3 = types.InlineKeyboardButton(text='🔙',
+    but_5 = types.InlineKeyboardButton(text='🔙',
                                        callback_data='available_projects')
-    key.add(but_1, but_2, but_3)
+    key.add(but_1, but_2, but_3, but_4, but_5)
     await bot.edit_message_text(
         chat_id=call.message.chat.id,
         message_id=call.message.message_id,
