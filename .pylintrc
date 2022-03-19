@@ -5,3 +5,5 @@ disable=
     W0511, # fixme
     E0401, # import-error
     C0115, # missing-class-docstring
+    R0914, # too-many-locals
+    R0915, # too-many-statements
