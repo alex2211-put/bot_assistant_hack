@@ -86,18 +86,15 @@ async def show_available_projects(bot, call, available_projects, projects_info):
 
 async def get_project_options(bot, call):
     key = types.InlineKeyboardMarkup()
+    project_id = call.data.split('_')[-1]
     but_1 = types.InlineKeyboardButton(text='Get messages',
-                                       callback_data='allMess_' +
-                                                     call.data.split('_')[-1])
+                                       callback_data='getMessages_' + project_id)
     but_2 = types.InlineKeyboardButton(text='Recipients',
-                                       callback_data='recipients_' +
-                                                     call.data.split('_')[-1])
+                                       callback_data='recipients_' +project_id)
     but_3 = types.InlineKeyboardButton(text='Responsible',
-                                       callback_data='responsible_' +
-                                                     call.data.split('_')[-1])
+                                       callback_data='responsible_' +project_id)
     but_4 = types.InlineKeyboardButton(text='Delete ❌',
-                                       callback_data='del_' +
-                                                     call.data.split('_')[-1])
+                                       callback_data='del_' +project_id)
     but_5 = types.InlineKeyboardButton(text='🔙',
                                        callback_data='available_projects')
     key.add(but_1, but_2, but_3, but_4, but_5)
@@ -107,3 +104,57 @@ async def get_project_options(bot, call):
         text='Choose one of options:',
         reply_markup=key,
     )
+
+
+async def get_messages(bot, call):
+    key = types.InlineKeyboardMarkup()
+    project_id = call.data.split('_')[-1]
+    but_1 = types.InlineKeyboardButton(text='Get 10 messages',
+                                       callback_data='getMessagesNum_' + project_id + '_10_0')
+    but_2 = types.InlineKeyboardButton(text='Get 50 messages',
+                                       callback_data='getMessagesNum_' + project_id + '_50_0')
+    but_3 = types.InlineKeyboardButton(text='Get all messages',
+                                       callback_data='getMessagesNum_' + project_id + '_-1_0')
+
+    key.add(but_1, but_2, but_3)
+    await bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text='View messages:',
+        reply_markup=key,
+    )
+
+
+async def get_messages_num(bot, call, project, messages_to_delete):
+    project_id = call.data.split('_')[1]
+    num = int(call.data.split('_')[2])
+    page = int(call.data.split('_')[3])
+
+    print(project)
+
+    messages = project['messages'][page*num:(page+1)*num]
+    if num == -1:
+        messages = project['messages']
+
+    key = types.InlineKeyboardMarkup()
+    but_1 = types.InlineKeyboardButton(text='<', callback_data=f'getMessagesNum_{project_id}_{num}_{page-1}')
+    but_2 = types.InlineKeyboardButton(text='Back', callback_data='getMessages_' + project_id)
+    but_3 = types.InlineKeyboardButton(text='>', callback_data=f'getMessagesNum_{project_id}_{num}_{page+1}')
+
+    if page > 0:
+        if (page + 1)*num<len(project['messages']):
+            key.add(but_1, but_2, but_3)
+        else:
+            key.add(but_1, but_2)
+    else:
+        if (page + 1)*num<len(project['messages']) and num!=-1:
+            key.add(but_2, but_3)
+        else:
+            key.add(but_2)
+
+    for m in messages:
+        message = await bot.send_message(call.message.chat.id, text=m)
+        messages_to_delete.append(message.message_id)
+
+    await bot.send_message(call.message.chat.id, text='Navigation', reply_markup=key)
+
