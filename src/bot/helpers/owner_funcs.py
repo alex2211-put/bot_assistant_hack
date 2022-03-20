@@ -128,8 +128,10 @@ async def get_messages(bot, call):
                                        callback_data='getMessagesNum_' + project_id + '_-1_0')
     but_4 = types.InlineKeyboardButton(text='🔙',
                                        callback_data='projectId_' + project_id)
+    but_5 = types.InlineKeyboardButton(text='🗑️',
+                                       callback_data='rubbish_' + project_id)
 
-    key.add(but_1, but_2, but_3)
+    key.add(but_1, but_2, but_3, but_5)
     key.add(but_4)
     await bot.edit_message_text(
         chat_id=call.message.chat.id,
@@ -256,3 +258,23 @@ async def add_owner(bot, call, person_states, messages_to_delete):
     )
     person_states[call['from'].id] = state_machine.ProjectStates.ADD_OWNERS
     messages_to_delete.extend([send_mess.message_id, call.message.message_id])
+
+
+async def get_all_archived(bot, call, project_info):
+    key = types.InlineKeyboardMarkup()
+    but_1 = types.InlineKeyboardButton(text='Clear',
+                                       callback_data='clear')
+    but_3 = types.InlineKeyboardButton(text='🔙',
+                                       callback_data='getMessages_' +
+                                                     call.data.split('_')[-1])
+    key.add(but_1, but_3)
+    myquery = {"archived": True}
+    mess = DBManagement().current_DB[project_info[int(call.data.split('_')[-1])]['name']].find(myquery)
+    for mess_ in mess:
+        print(mess_)
+    await bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text='Choose option:',
+        reply_markup=key,
+    )

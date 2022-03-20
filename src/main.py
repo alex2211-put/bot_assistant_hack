@@ -693,6 +693,9 @@ def main():
                 available_project_for_customer[call.message['from'].username],
                 projects_info)
             person_states[call.message.from_user.id] = None
+        elif call.data.split('_')[0] == 'rubbish':
+            await owner_funcs.get_all_archived(bot, call, projects_info)
+
         elif call.data == 'available_projects':
             username = call['from'].username
             if available_project_for_owner.get(username):
