@@ -154,16 +154,14 @@ def generate_message_key(project_id, m):
     return message_key
 
 
-async def get_messages_num(bot, call, project, messages_to_delete):
+async def get_messages_num(bot, call, project, messages_to_delete, message_map):
     project_id = call.data.split('_')[1]
     num = int(call.data.split('_')[2])
     page = int(call.data.split('_')[3])
     data_base = DBManagement()
-    print(project)
     messages = data_base.select_from_db(project_name=project['name'], count=0)
     text_mess = []
     for message in messages:
-        print(message)
         text_mess.append(message)
     project['messages'] = text_mess
     messages = [m for m in text_mess if not m['archived']][
@@ -200,6 +198,7 @@ async def get_messages_num(bot, call, project, messages_to_delete):
                                          reply_markup=generate_message_key(
                                              project_id, m))
         messages_to_delete.append(message.message_id)
+        message_map[message.message_id] = message
 
     message = await bot.send_message(call.message.chat.id, text='Navigation',
                                      reply_markup=key)
