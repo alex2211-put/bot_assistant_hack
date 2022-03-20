@@ -96,18 +96,6 @@ def main():
             text=f'Пришел контент {message}',
         )
 
-    @dispatcher.message_handler(
-        content_types=['text'],
-    )
-    async def messagesListener(message):
-        if message.reply_to_message:
-            print('reply')
-            original_message = message.reply_to_message
-            await bot.send_message(
-                original_message.chat.id,
-                text=message.text
-            )
-
     @dispatcher.callback_query_handler(
         lambda call: call.data.split('_')[0] == 'getMessages')
     async def get_messages(call):
@@ -733,7 +721,14 @@ def main():
 
     @dispatcher.message_handler(content_types=['text'])
     async def text_mess(message):
-        if person_states[message['from'].id]:
+        if message.reply_to_message:
+            print('reply')
+            original_message = message.reply_to_message
+            await bot.send_message(
+                original_message.chat.id,
+                text=message.text
+            )
+        elif person_states[message['from'].id]:
             if person_states[message['from'].id].split('_')[
                 0] == 'WRITEPROJECTMESSAGES':
                 data_base.insert_into_db(projects_info[int(
