@@ -724,7 +724,7 @@ def main():
     @dispatcher.message_handler(content_types=['text'])
     async def text_mess(message):
         if message.reply_to_message:
-            original_message = message_map[message.reply_to_message]
+            original_message = message_map[message.reply_to_message.message_id]
             await bot.send_message(
                 original_message.chat.id,
                 text=message.text,
