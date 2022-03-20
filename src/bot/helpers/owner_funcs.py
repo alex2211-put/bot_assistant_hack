@@ -220,7 +220,7 @@ async def get_owners(bot, call, owners):
     but_2 = types.InlineKeyboardButton(text='Remove ➖',
                                        callback_data='removeOwners')
     but_3 = types.InlineKeyboardButton(text='🔙',
-                                       callback_data='add_owners')
+                                       callback_data='to_main_owner_page')
     key.add(but_1, but_2, but_3)
     for i in range(len(owners)):
         text += f'{i + 1}) {owners[i]}\n'
@@ -235,7 +235,7 @@ async def get_owners(bot, call, owners):
 async def remove_owner(bot, call, person_states, messages_to_delete):
     send_mess = await bot.send_message(
         chat_id=call.message.chat.id,
-        text='Enter one owner to remove:'
+        text='Enter index owner to remove:'
     )
     person_states[call['from'].id] = state_machine.ProjectStates.REMOVE_OWNERS
     messages_to_delete.extend([send_mess.message_id, call.message.message_id])
@@ -244,7 +244,7 @@ async def remove_owner(bot, call, person_states, messages_to_delete):
 async def add_owner(bot, call, person_states, messages_to_delete):
     send_mess = await bot.send_message(
         chat_id=call.message.chat.id,
-        text='Enter index of owner to delete:'
+        text='Add extra owner username:'
     )
     person_states[call['from'].id] = state_machine.ProjectStates.ADD_OWNERS
     messages_to_delete.extend([send_mess.message_id, call.message.message_id])

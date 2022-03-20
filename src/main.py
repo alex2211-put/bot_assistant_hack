@@ -327,7 +327,7 @@ def main():
         but_2 = types.InlineKeyboardButton(text='Remove ➖',
                                            callback_data='removeOwners')
         but_5 = types.InlineKeyboardButton(text='🔙',
-                                           callback_data='add_owners')
+                                           callback_data='to_main_owner_page')
         key.add(but_1, but_2, but_5)
         text = 'Owners:\n'
         for i in range(len(owners)):
@@ -359,7 +359,7 @@ def main():
         but_2 = types.InlineKeyboardButton(text='Remove ➖',
                                            callback_data='removeOwners')
         but_5 = types.InlineKeyboardButton(text='🔙',
-                                           callback_data='add_owners')
+                                           callback_data='to_main_owner_page')
         key.add(but_1, but_2, but_5)
         text = 'Owners:\n'
         for i in range(len(owners)):
