@@ -21,7 +21,7 @@ async def start_func(bot, message, available_projects, projects_info):
                 )
             )
     key.add(*buts)
-    if key:
+    if buts:
         await bot.send_message(
             chat_id=message.chat.id,
             text='Choose one of projects:',
