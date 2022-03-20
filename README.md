@@ -5,6 +5,8 @@ Link to the bot - [AssistantHack](https://t.me/mango_humans_assistant_bot)
 
 Link to the board - [Mango_bot](https://trello.com/b/wxsCduHL/mangobot)
 
+Demo - https://youtu.be/G_mG1VoWXk4
+
 Team **Mango humans**
 1) Alexander Putin: [telegram](https://t.me/alik_put)
 2) Potapov Anton: [telegram](https://t.me/JustAnt)
