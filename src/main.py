@@ -729,9 +729,9 @@ def main():
         if message.reply_to_message:
             original_message = message_map[message.reply_to_message.message_id]
             await bot.send_message(
-                original_message.chat.id,
+                original_message['chat_id'],
                 text=message.text,
-                reply_to_message_id=original_message.message_id
+                reply_to_message_id=original_message['message_id']
             )
         elif person_states[message['from'].id]:
             if person_states[message['from'].id].split('_')[
