@@ -80,7 +80,10 @@ def main():
         if message['from'].username in owners:
             await owner_funcs.start_func(bot, message)
         else:
-            await customer_funcs.start_func(bot, message)
+            await customer_funcs.start_func(
+                bot, message,
+                available_project_for_customer[message.from_user.username],
+            projects_info)
         await bot.delete_message(message.chat.id, message.message_id)
 
     @dispatcher.message_handler(
@@ -668,6 +671,11 @@ def main():
         elif call.data == 'removeOwners':
             await owner_funcs.remove_owner(bot, call, person_states,
                                            messages_to_delete)
+        elif call.data.split('_')[0] == 'CustProjectId':
+            await customer_funcs.get_messages_for_project(
+                bot, call, projects_info, int(call.data.split('_')[-1]))
+        elif call.data == 'to_main_customer_page':
+            await
         elif call.data == 'available_projects':
             username = call['from'].username
             if available_project_for_owner.get(username):
