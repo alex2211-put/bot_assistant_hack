@@ -28,6 +28,7 @@ messages_to_delete = []
 available_project_for_customer = collections.defaultdict(set)
 available_project_for_owner = collections.defaultdict(set)
 projects_info = collections.defaultdict(dict)
+message_map = collections.defaultdict(dict)
 
 
 async def set_commands(bot: Bot):
@@ -68,7 +69,7 @@ def main():
 
     for i in range(100):
         projects_info[140691900203440]['messages'].append(
-            {"message_id": i, "from": {"id": 342074576, "is_bot": False, "first_name": "Ivan Ludvig", "username": "IvanLudvig", "language_code": "en"}, "chat": {"id": 342074576, "first_name": "Ivan Ludvig", "username": "IvanLudvig", "type": "private"}, "date": 1647764752, "message_text": f"m{i}", 'archived': False, 'importance_marker': False})
+            {'user_name': 'IvanLudvig', "message_id": i, "from": {"id": 342074576, "is_bot": False, "first_name": "Ivan Ludvig", "username": "IvanLudvig", "language_code": "en"}, "chat": {"id": 342074576, "first_name": "Ivan Ludvig", "user_name": "IvanLudvig", "type": "private"}, "date": 1647764752, "message_text": f"m{i}", 'archived': False, 'importance_marker': False})
 
     @dispatcher.message_handler(commands=['start'])
     async def start(message):
@@ -611,7 +612,8 @@ def main():
         messages_to_delete.clear()
         await owner_funcs.get_messages_num(bot, call,
                                            projects_info[int(project_id)],
-                                           messages_to_delete)
+                                           messages_to_delete,
+                                           message_map)
 
     @dispatcher.callback_query_handler(
         lambda call: call.data.split('_')[0] == 'markImportant')
@@ -722,11 +724,11 @@ def main():
     @dispatcher.message_handler(content_types=['text'])
     async def text_mess(message):
         if message.reply_to_message:
-            print('reply')
-            original_message = message.reply_to_message
+            original_message = message_map[message.reply_to_message]
             await bot.send_message(
                 original_message.chat.id,
-                text=message.text
+                text=message.text,
+                reply_to_message_id=original_message.message_id
             )
         elif person_states[message['from'].id]:
             if person_states[message['from'].id].split('_')[
