@@ -7,6 +7,8 @@ Link to the board - [Mango_bot](https://trello.com/b/wxsCduHL/mangobot)
 
 Demo - https://youtu.be/G_mG1VoWXk4
 
+Presentation - https://docs.google.com/presentation/d/1YaYevwRmHGGf9GP3hG5BLbSS8ifHTRarrIw1ifceFNA/edit?usp=sharing
+
 Team **Mango humans**
 1) Alexander Putin: [telegram](https://t.me/alik_put)
 2) Potapov Anton: [telegram](https://t.me/JustAnt)
