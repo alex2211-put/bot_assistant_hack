@@ -198,7 +198,7 @@ async def get_messages_num(bot, call, project, messages_to_delete, message_map):
                                          reply_markup=generate_message_key(
                                              project_id, m))
         messages_to_delete.append(message.message_id)
-        message_map[message.message_id] = message
+        message_map[message.message_id] = m
 
     message = await bot.send_message(call.message.chat.id, text='Navigation',
                                      reply_markup=key)
