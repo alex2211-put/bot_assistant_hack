@@ -80,7 +80,7 @@ def main():
         if message['from'].username in owners:
             await owner_funcs.start_func(bot, message)
         else:
-            await customer_funcs.start_func()
+            await customer_funcs.start_func(bot, message)
         await bot.delete_message(message.chat.id, message.message_id)
 
     @dispatcher.message_handler(
