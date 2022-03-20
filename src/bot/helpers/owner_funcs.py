@@ -89,7 +89,6 @@ async def do_work_after_collecting_data(
     )
     data_base = DBManagement()
     del project_info['start_message']
-    print(project_info)
     data_base.insert_information_about_projects(
         project_info['name'],
         project_info,

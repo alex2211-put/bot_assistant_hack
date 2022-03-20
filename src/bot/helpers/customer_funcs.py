@@ -73,7 +73,6 @@ async def get_messages_for_project(bot, call, projects_info, project_id,
            'You can write me, I will remember them'
     person_states[call.message.chat.id] = 'WRITEPROJECTMESSAGES_' + str(
         project_id)
-    print(person_states)
     await bot.edit_message_text(
         chat_id=call.message.chat.id,
         message_id=call.message.message_id,

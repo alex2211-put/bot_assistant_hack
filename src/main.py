@@ -88,14 +88,6 @@ def main():
             text=f'Пришел контент {message}',
         )
 
-    @dispatcher.callback_query_handler(
-        lambda call: call.data.split('_')[0] == 'getMessages')
-    async def get_messages(call):
-        for message_to_delete in messages_to_delete:
-            await bot.delete_message(call.message.chat.id, message_to_delete)
-        messages_to_delete.clear()
-        await owner_funcs.get_messages(bot, call)
-
     @dispatcher.message_handler(content_types=['voice'])
     async def voice_mess(message):
         # TODO: based on what we have recognized, do something
@@ -110,51 +102,6 @@ def main():
             message.chat.id, text=f'Распознан текст:\n' f'{text_from_voice}'
         )
 
-    @dispatcher.message_handler(commands=['add'])
-    async def add_project(message):
-        logger.info('Get /add command %s', message)
-        # TODO: save a new project in the database by its hash.
-        #  Add a state machine
-        # dbConnection = dbConnection()
-        # dbConnection.add_project(message)
-
-    @dispatcher.message_handler(commands=['all'])
-    async def get_active_projects(message):
-        logger.info('Get /all command %s', message)
-        # TODO: return only those projects that the user is related to
-        # dbConnection = dbConnection()
-        # all_projects = dbConnection.get_all_projects_for_user()
-        # await bot.send_message(message.chat.id, text=f'Доступные проекты:\n'
-        # '\n'.join(all_projects))
-
-    @dispatcher.message_handler(commands=['select'])
-    async def select_project(message):
-        logger.info('Get /select command %s', message)
-        # TODO: change the project in the state machine or context,
-        #  which the user is currently on
-
-    @dispatcher.message_handler(commands=['get'])
-    # pylint: disable=unused-argument
-    async def get_messages_for_project(message):
-        logger.info('Get /get command %s', message)
-        # TODO: in the state machine change the state and throw it
-        #  to the choice of, which messages to receive / how many, etc.
-
-    @dispatcher.message_handler(commands=['archive'])
-    async def delete_project(message):
-        logger.info('Get /archive command %s', message)
-        # TODO: remove the project to the archive - we do not delete it
-        #  from the database, but we stop showing it in active
-        # dbConnection = dbConnection()
-        # dbConnection.archive_project(project)
-
-    @dispatcher.message_handler(commands=['all_with_archive'])
-    async def get_all_projects_vs_archive(message):
-        logger.info('Get /all_with_archive command %s', message)
-        # TODO: return all projects - even archived ones
-        # dbConnection = dbConnection()
-        # dbConnection.archive_project(project)
-
     @dispatcher.message_handler(
         lambda message: (
                 person_states[message['from'].id] ==
@@ -163,8 +110,6 @@ def main():
     )
     async def set_project_name(message):
         logger.info('Get text message %s', message)
-        print(message)
-        print(message.from_user)
         last_project_info[message.from_user.id]['name'] = message.text
         last_project_info[message.from_user.id]['id'] = id(
             last_project_info[message.from_user.id]['name'])
@@ -616,10 +561,10 @@ def main():
              m['message_id'] == m_id][0]
         message['importance_marker'] = not message['importance_marker']
         myquery = {"message_id": message['message_id']}
-        newvalues = {"$set": {"importance_marker": message['importance_marker']}}
+        newvalues = {
+            "$set": {"importance_marker": message['importance_marker']}}
         data_base.current_DB[projects_info[project_id]['name']].update_one(
             myquery, newvalues)
-        print('updated')
         await owner_funcs.mark_important(bot, call, project_id, message)
 
     @dispatcher.callback_query_handler(
@@ -657,6 +602,12 @@ def main():
     async def callback_inline(call):
         if call.data == 'shutdown':
             # TODO: save everything into db
+            await bot.send_message(
+                chat_id=call.message.chat.id,
+                text='All data saved, bye!'
+            )
+            await bot.delete_message(chat_id=call.message.chat.id,
+                                     message_id=call.message.message_id)
             sys.exit(0)
         elif call.data == 'new_project':
             last_project_info[call.message.chat.id][
@@ -688,18 +639,16 @@ def main():
             await owner_funcs.get_all_archived(bot, call, projects_info)
         elif call.data.split('_')[0] == 'clear':
             myquery = {"archived": True}
-            data_base.current_DB[projects_info[int(call.data.split('_')[-1])]['name']].delete_many(myquery)
+            data_base.current_DB[projects_info[int(call.data.split('_')[-1])][
+                'name']].delete_many(myquery)
             await owner_funcs.get_all_archived(bot, call, projects_info)
         elif call.data == 'to_main_manager_page':
             await owner_funcs.main_manager_page(bot, call)
         elif call.data.split('_')[0] == 'ManagerProjectId':
-            await owner_funcs.manager_show_propert_proj(bot, call, projects_info)
+            await owner_funcs.manager_show_propert_proj(bot, call,
+                                                        projects_info)
         elif call.data == 'available_projects':
             username = call['from'].username
-            print(username)
-            print(owners)
-            print(available_project_for_owner)
-
             if available_project_for_owner.get(username) and username in owners:
                 await owner_funcs.show_available_projects(
                     bot,
@@ -707,7 +656,8 @@ def main():
                     available_project_for_owner[username],
                     projects_info,
                 )
-            elif available_project_for_owner.get(username) and username not in owners:
+            elif available_project_for_owner.get(
+                    username) and username not in owners:
                 await owner_funcs.show_available_projects_manager(
                     bot,
                     call,
@@ -715,7 +665,10 @@ def main():
                     projects_info,
                 )
             elif available_project_for_customer.get(username):
-                await customer_funcs.main_customer_page()
+                await customer_funcs.main_customer_page(
+                    bot, call,
+                    available_project_for_customer[username],
+                    projects_info)
             else:
                 key = types.InlineKeyboardMarkup()
                 but_1 = types.InlineKeyboardButton(
@@ -744,8 +697,7 @@ def main():
                 0] == 'WRITEPROJECTMESSAGES':
                 data_base.insert_into_db(projects_info[int(
                     person_states[message.from_user.id].split('_')[-1])][
-                                            'name'], message, False, 'text')
-                print("\insert into db")
+                                             'name'], message, False, 'text')
                 await bot.send_message(message.from_user.id, 'Message received')
         logger.info('Get text message %s', message)
         # TODO: if it is currently in the project,
