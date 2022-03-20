@@ -693,7 +693,10 @@ def main():
             person_states[call.message.from_user.id] = None
         elif call.data.split('_')[0] == 'rubbish':
             await owner_funcs.get_all_archived(bot, call, projects_info)
-
+        elif call.data.split('_')[0] == 'clear':
+            myquery = {"archived": True}
+            data_base.current_DB[projects_info[int(call.data.split('_')[-1])]['name']].delete_many(myquery)
+            await owner_funcs.get_all_archived(bot, call, projects_info)
         elif call.data == 'available_projects':
             username = call['from'].username
             if available_project_for_owner.get(username):
@@ -735,6 +738,7 @@ def main():
                     person_states[message.from_user.id].split('_')[-1])][
                                             'name'], message, False, 'text')
                 print("\insert into db")
+                await bot.send_message()
         logger.info('Get text message %s', message)
         # TODO: if it is currently in the project,
         #  throw his message into the database

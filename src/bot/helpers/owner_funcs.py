@@ -263,18 +263,21 @@ async def add_owner(bot, call, person_states, messages_to_delete):
 async def get_all_archived(bot, call, project_info):
     key = types.InlineKeyboardMarkup()
     but_1 = types.InlineKeyboardButton(text='Clear',
-                                       callback_data='clear')
+                                       callback_data='clear_' + call.data.split('_')[-1])
     but_3 = types.InlineKeyboardButton(text='🔙',
                                        callback_data='getMessages_' +
                                                      call.data.split('_')[-1])
     key.add(but_1, but_3)
     myquery = {"archived": True}
     mess = DBManagement().current_DB[project_info[int(call.data.split('_')[-1])]['name']].find(myquery)
+    text = 'Deleted messages:\n'
+    i = 1
     for mess_ in mess:
-        print(mess_)
+        text += str(i) + ') ' + mess_['message_text'] + ', from @' + mess_['user_name'] + '\n'
+        i += 1
     await bot.edit_message_text(
         chat_id=call.message.chat.id,
         message_id=call.message.message_id,
-        text='Choose option:',
+        text=text + '\n\nChoose option:',
         reply_markup=key,
     )
