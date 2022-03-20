@@ -189,7 +189,12 @@ async def get_messages_num(bot, call, project, messages_to_delete):
             key.add(but_2)
 
     for m in messages:
-        message = await bot.send_message(call.message.chat.id, text=m['message_text'],
+        if m['importance_marker']:
+            text = '✅' + m['message_text']
+        else:
+            text = m['message_text']
+        m['message_text'] = text
+        message = await bot.send_message(call.message.chat.id, text=text,
                                          reply_markup=generate_message_key(
                                              project_id, m))
         messages_to_delete.append(message.message_id)

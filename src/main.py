@@ -624,6 +624,11 @@ def main():
             [m for m in projects_info[project_id]['messages'] if
              m['message_id'] == m_id][0]
         message['importance_marker'] = not message['importance_marker']
+        myquery = {"message_id": message['message_id']}
+        newvalues = {"$set": {"importance_marker": message['importance_marker']}}
+        data_base.current_DB[projects_info[project_id]['name']].update_one(
+            myquery, newvalues)
+        print('updated')
         await owner_funcs.mark_important(bot, call, project_id, message)
 
     @dispatcher.callback_query_handler(
@@ -650,6 +655,10 @@ def main():
             [m for m in projects_info[project_id]['messages'] if
              m['message_id'] == m_id][0]
         message['archived'] = not message['archived']
+        myquery = {"message_id": message['message_id']}
+        newvalues = {"$set": {"archived": message['archived']}}
+        data_base.current_DB[projects_info[project_id]['name']].update_one(
+            myquery, newvalues)
         messages_to_delete.remove(call.message.message_id)
         await bot.delete_message(call.message.chat.id, call.message.message_id)
 
@@ -683,7 +692,7 @@ def main():
                 bot, call,
                 available_project_for_customer[call.message['from'].username],
                 projects_info)
-            person_states[call.message.message.from_user.id] = None
+            person_states[call.message.from_user.id] = None
         elif call.data == 'available_projects':
             username = call['from'].username
             if available_project_for_owner.get(username):
