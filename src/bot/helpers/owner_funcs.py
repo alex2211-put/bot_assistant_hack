@@ -25,8 +25,32 @@ async def start_func(bot, message):
     )
 
 
+async def start_manager(bot, message):
+    key = types.InlineKeyboardMarkup()
+    but_1 = types.InlineKeyboardButton(text="Available projects",
+                                       callback_data="available_projects")
+    key.add(but_1)
+    name = message['from']['first_name'] or message['from']['username']
+    await bot.send_message(
+        message.chat.id, f'Hi, {name}! Select one:', reply_markup=key,
+    )
+
+
 async def main_page(bot, call):
     key = get_main_key()
+    await bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text='Select one:',
+        reply_markup=key,
+    )
+
+
+async def main_manager_page(bot, call):
+    key = types.InlineKeyboardMarkup()
+    but_1 = types.InlineKeyboardButton(text="Available projects",
+                                       callback_data="available_projects")
+    key.add(but_1)
     await bot.edit_message_text(
         chat_id=call.message.chat.id,
         message_id=call.message.message_id,
@@ -65,6 +89,7 @@ async def do_work_after_collecting_data(
     )
     data_base = DBManagement()
     del project_info['start_message']
+    print(project_info)
     data_base.insert_information_about_projects(
         project_info['name'],
         project_info,
@@ -89,6 +114,50 @@ async def show_available_projects(bot, call, available_projects, projects_info):
         chat_id=call.message.chat.id,
         message_id=call.message.message_id,
         text='Choose one of projects:',
+        reply_markup=key,
+    )
+
+
+async def show_available_projects_manager(bot, call, available_projects, projects_info):
+    key = types.InlineKeyboardMarkup(row_width=2)
+    buts = []
+    for available_project in available_projects:
+        if projects_info[available_project]:
+            buts.append(
+                types.InlineKeyboardButton(
+                    text=projects_info[available_project]['name'],
+                    callback_data='ManagerProjectId_' + str(available_project),
+                )
+            )
+    but_1 = types.InlineKeyboardButton(text='🔙',
+                                       callback_data='to_main_manager_page')
+    key.add(*buts, but_1)
+    await bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text='Choose one of projects:',
+        reply_markup=key,
+    )
+
+
+async def manager_show_propert_proj(bot, call, projects_info):
+    key = types.InlineKeyboardMarkup()
+    project_id = call.data.split('_')[-1]
+    but_1 = types.InlineKeyboardButton(text='Get messages',
+                                       callback_data='getMessages_' + project_id)
+    but_2 = types.InlineKeyboardButton(text='Recipients',
+                                       callback_data='recipients_' + project_id)
+    but_4 = types.InlineKeyboardButton(text='Delete ❌',
+                                       callback_data='del_' + project_id)
+    but_5 = types.InlineKeyboardButton(text='🔙',
+                                       callback_data='available_projects')
+    key.add(but_1, but_2, but_4, but_5)
+    text = 'Project description:\n' + projects_info[int(project_id)][
+        'description'] + '\n\n'
+    await bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text=text + 'Choose one of options:',
         reply_markup=key,
     )
 

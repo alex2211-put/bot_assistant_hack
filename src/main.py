@@ -60,25 +60,16 @@ def main():
         format='%(asctime)s %(name)-30s %(levelname)-8s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S',
     )
-    projects_info[140691900203440] = {'name': 'a', 'main_message': 'whatever',
-                                      'messages': [], 'description': 'decription'}
-    available_project_for_owner['a'] = {140691900203440}
-    available_project_for_owner['IvanLudvig'] = {140691900203440}
-    available_project_for_customer['a'] = {140691900203440}
-    person_states[853881966] = state_machine.ProjectStates.PROJECT_RECIPIENTS
-
-    for i in range(100):
-        projects_info[140691900203440]['messages'].append(
-            {'user_name': 'IvanLudvig', "message_id": i, "from": {"id": 342074576, "is_bot": False, "first_name": "Ivan Ludvig", "username": "IvanLudvig", "language_code": "en"}, "chat": {"id": 342074576, "first_name": "Ivan Ludvig", "user_name": "IvanLudvig", "type": "private"}, "date": 1647764752, "message_text": f"m{i}", 'archived': False, 'importance_marker': False})
 
     @dispatcher.message_handler(commands=['start'])
     async def start(message):
         person_states[message.from_user.id] = None
         await set_commands(bot)
         logger.info('Get /start command %s', message)
-
         if message['from'].username in owners:
             await owner_funcs.start_func(bot, message)
+        elif message['from'].username in available_project_for_owner.keys():
+            await owner_funcs.start_manager(bot, message)
         else:
             await customer_funcs.start_func(
                 bot, message,
@@ -699,17 +690,32 @@ def main():
             myquery = {"archived": True}
             data_base.current_DB[projects_info[int(call.data.split('_')[-1])]['name']].delete_many(myquery)
             await owner_funcs.get_all_archived(bot, call, projects_info)
+        elif call.data == 'to_main_manager_page':
+            await owner_funcs.main_manager_page(bot, call)
+        elif call.data.split('_')[0] == 'ManagerProjectId':
+            await owner_funcs.manager_show_propert_proj(bot, call, projects_info)
         elif call.data == 'available_projects':
             username = call['from'].username
-            if available_project_for_owner.get(username):
+            print(username)
+            print(owners)
+            print(available_project_for_owner)
+
+            if available_project_for_owner.get(username) and username in owners:
                 await owner_funcs.show_available_projects(
                     bot,
                     call,
                     available_project_for_owner[username],
                     projects_info,
                 )
+            elif available_project_for_owner.get(username) and username not in owners:
+                await owner_funcs.show_available_projects_manager(
+                    bot,
+                    call,
+                    available_project_for_owner[username],
+                    projects_info,
+                )
             elif available_project_for_customer.get(username):
-                pass
+                await customer_funcs.main_customer_page()
             else:
                 key = types.InlineKeyboardMarkup()
                 but_1 = types.InlineKeyboardButton(
