@@ -59,9 +59,8 @@ def main():
         format='%(asctime)s %(name)-30s %(levelname)-8s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S',
     )
-
     projects_info[140691900203440] = {'name': 'a', 'main_message': 'whatever',
-                                      'messages': []}
+                                      'messages': [], 'description': 'decription'}
     available_project_for_owner['a'] = {140691900203440}
     available_project_for_owner['IvanLudvig'] = {140691900203440}
     available_project_for_customer['a'] = {140691900203440}
@@ -69,8 +68,7 @@ def main():
 
     for i in range(100):
         projects_info[140691900203440]['messages'].append(
-            {'id': i, 'text': 'message' + str(i), 'important': False,
-             'deleted': False})
+            {"message_id": i, "from": {"id": 342074576, "is_bot": False, "first_name": "Ivan Ludvig", "username": "IvanLudvig", "language_code": "en"}, "chat": {"id": 342074576, "first_name": "Ivan Ludvig", "username": "IvanLudvig", "type": "private"}, "date": 1647764752, "message_text": f"m{i}", 'archived': False, 'importance_marker': False})
 
     @dispatcher.message_handler(commands=['start'])
     async def start(message):
@@ -97,6 +95,18 @@ def main():
             message.chat.id,
             text=f'Пришел контент {message}',
         )
+
+    @dispatcher.message_handler(
+        content_types=['text'],
+    )
+    async def messagesListener(message):
+        if message.reply_to_message:
+            print('reply')
+            original_message = message.reply_to_message
+            await bot.send_message(
+                original_message.chat.id,
+                text=message.text
+            )
 
     @dispatcher.callback_query_handler(
         lambda call: call.data.split('_')[0] == 'getMessages')
@@ -720,12 +730,13 @@ def main():
 
     @dispatcher.message_handler(content_types=['text'])
     async def text_mess(message):
-        if person_states[message['from'].id].split('_')[
-            0] == 'WRITEPROJECTMESSAGES':
-            data_base.insert_into_db(projects_info[int(
-                person_states[message.from_user.id].split('_')[-1])][
-                                         'name'], message, False, 'text')
-            print("\insert into db")
+        if person_states[message['from'].id]:
+            if person_states[message['from'].id].split('_')[
+                0] == 'WRITEPROJECTMESSAGES':
+                data_base.insert_into_db(projects_info[int(
+                    person_states[message.from_user.id].split('_')[-1])][
+                                            'name'], message, False, 'text')
+                print("\insert into db")
         logger.info('Get text message %s', message)
         # TODO: if it is currently in the project,
         #  throw his message into the database
