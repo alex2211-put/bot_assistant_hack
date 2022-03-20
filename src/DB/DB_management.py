@@ -29,7 +29,7 @@ class DBManagement:
             self,
             project_name,
             message: Dict,
-            importance_marker: str,
+            importance_marker: bool,
             message_type,
     ):
 

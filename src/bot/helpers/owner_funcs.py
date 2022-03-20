@@ -107,8 +107,6 @@ async def get_project_options(bot, call, projects_info):
     but_5 = types.InlineKeyboardButton(text='🔙',
                                        callback_data='available_projects')
     key.add(but_1, but_2, but_3, but_4, but_5)
-    print(projects_info)
-    print(project_id)
     text = 'Project description:\n' + projects_info[int(project_id)][
         'description'] + '\n\n'
     await bot.edit_message_text(
@@ -144,7 +142,7 @@ async def get_messages(bot, call):
 def generate_message_key(project_id, m):
     message_key = types.InlineKeyboardMarkup()
     btn1_text = 'Mark as unimportant' if m[
-        'importance_marker'] == 'red' else '✅ Mark as important'
+        'importance_marker'] else '✅ Mark as important'
     m_id = m['message_id']
     mbut_1 = types.InlineKeyboardButton(text=btn1_text,
                                         callback_data=f'markImportant_{project_id}_{m_id}')
@@ -165,6 +163,7 @@ async def get_messages_num(bot, call, project, messages_to_delete):
     for message in messages:
         print(message)
         text_mess.append(message)
+    project['messages'] = text_mess
     messages = [m for m in text_mess if not m['archived']][
                page * num:(page + 1) * num]
     if num == -1:
@@ -203,7 +202,7 @@ async def get_messages_num(bot, call, project, messages_to_delete):
 
 async def mark_important(bot, call, project_id, m):
     text = ''
-    if m['importance_marker'] == 'red':
+    if m['importance_marker']:
         text = '✅' + call.message.text
     else:
         text = call.message.text[1:]

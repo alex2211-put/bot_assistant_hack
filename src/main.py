@@ -622,8 +622,8 @@ def main():
         m_id = int(call.data.split('_')[2])
         message = \
             [m for m in projects_info[project_id]['messages'] if
-             m['id'] == m_id][0]
-        message['important'] = not message['important']
+             m['message_id'] == m_id][0]
+        message['importance_marker'] = not message['importance_marker']
         await owner_funcs.mark_important(bot, call, project_id, message)
 
     @dispatcher.callback_query_handler(
@@ -648,8 +648,8 @@ def main():
         m_id = int(call.data.split('_')[2])
         message = \
             [m for m in projects_info[project_id]['messages'] if
-             m['id'] == m_id][0]
-        message['deleted'] = not message['deleted']
+             m['message_id'] == m_id][0]
+        message['archived'] = not message['archived']
         messages_to_delete.remove(call.message.message_id)
         await bot.delete_message(call.message.chat.id, call.message.message_id)
 
@@ -715,7 +715,7 @@ def main():
             0] == 'WRITEPROJECTMESSAGES':
             data_base.insert_into_db(projects_info[int(
                 person_states[message.from_user.id].split('_')[-1])][
-                                         'name'], message, 'green', 'text')
+                                         'name'], message, False, 'text')
             print("\insert into db")
         logger.info('Get text message %s', message)
         # TODO: if it is currently in the project,
