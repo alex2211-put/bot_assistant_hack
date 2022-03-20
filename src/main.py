@@ -740,7 +740,7 @@ def main():
                     person_states[message.from_user.id].split('_')[-1])][
                                             'name'], message, False, 'text')
                 print("\insert into db")
-                await bot.send_message()
+                await bot.send_message(message.from_user.id, 'Message received')
         logger.info('Get text message %s', message)
         # TODO: if it is currently in the project,
         #  throw his message into the database
