@@ -19,10 +19,10 @@ class DBManagement:
         types_of_content = ["voice", "photo",
                             "video", "audio", "document", "location"]
         for i in types_of_content:
-            if message.get(i):
+            if message[i]:
                 content_type = i
                 break
-        content_id = message.get(content_type)["id"]
+        content_id = message[content_type]["id"]
         return [content_type, content_id]
 
     def insert_into_db(
@@ -35,7 +35,7 @@ class DBManagement:
 
         self.connect_to_a_project(project_name)
 
-        if message.get("test") is None:
+        if message["text"] is None:
             content_type, content_id = self._get_id(message)
         else:
             content_type = 'text'
@@ -44,13 +44,13 @@ class DBManagement:
             "message_id": message["message_id"],
             "chat_id": message["chat"]["id"],
             "user_id": message["from"]["id"],
-            "first_name": message["from"].get("first_name"),
-            "last_name": message["from"].get("last_name"),
-            "user_name": message["from"].get("user_name"),
+            "first_name": message["from"]["first_name"],
+            "last_name": message["from"]["last_name"],
+            "user_name": message["from"]["username"],
             "date": message["date"],
             "importance_marker": importance_marker,
-            "message_text": message.get("text"),
-            "media_group_id": message.get(["media_group_id"]),
+            "message_text": message["text"],
+            "media_group_id": message["media_group_id"],
             "message_type": message_type,
             "content_type": content_type,
             "content_id": content_id,

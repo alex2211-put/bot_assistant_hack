@@ -62,7 +62,8 @@ async def main_customer_page(bot, call, available_projects, projects_info):
         )
 
 
-async def get_messages_for_project(bot, call, projects_info, project_id):
+async def get_messages_for_project(bot, call, projects_info, project_id,
+                                   person_states):
     key = types.InlineKeyboardMarkup()
     but_1 = types.InlineKeyboardButton(text='🔙',
                                        callback_data='to_main_customer_page')
@@ -70,6 +71,9 @@ async def get_messages_for_project(bot, call, projects_info, project_id):
     text = 'Description:\n' + projects_info[project_id][
         'main_message'] + '\n\n' + 'I am ready to receive you messages. ' + \
            'You can write me, I will remember them'
+    person_states[call.message.chat.id] = 'WRITEPROJECTMESSAGES_' + str(
+        project_id)
+    print(person_states)
     await bot.edit_message_text(
         chat_id=call.message.chat.id,
         message_id=call.message.message_id,

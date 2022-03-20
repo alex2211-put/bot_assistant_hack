@@ -23,7 +23,7 @@ from bot.helpers import state_machine
 logger = logging.getLogger(__name__)
 owners = read_service.get_owners()
 last_project_info = collections.defaultdict(dict)
-person_states = {}
+person_states = collections.defaultdict()
 messages_to_delete = []
 available_project_for_customer = collections.defaultdict(set)
 available_project_for_owner = collections.defaultdict(set)
@@ -47,12 +47,12 @@ def main():
             'main_message': doc['main_message'],
             'recipients': doc['recipients'].split(),
             'responsible': doc['responsible'].split(),
-            'description': last_project_info['description'],
+            'description': doc['description'],
         }
         for responsible in doc['responsible'].split():
             available_project_for_owner[responsible].add(doc['id'])
         for recipient in doc['recipients'].split():
-            available_project_for_owner[recipient].add(doc['id'])
+            available_project_for_customer[recipient].add(doc['id'])
     logging.basicConfig(
         filename='main.log',
         level=logging.DEBUG,
@@ -74,6 +74,7 @@ def main():
 
     @dispatcher.message_handler(commands=['start'])
     async def start(message):
+        person_states[message.from_user.id] = None
         await set_commands(bot)
         logger.info('Get /start command %s', message)
 
@@ -82,7 +83,7 @@ def main():
         else:
             await customer_funcs.start_func(
                 bot, message,
-                available_project_for_customer[message.from_user.username],
+                available_project_for_customer[message['from'].username],
                 projects_info)
         await bot.delete_message(message.chat.id, message.message_id)
 
@@ -166,12 +167,14 @@ def main():
 
     @dispatcher.message_handler(
         lambda message: (
-                person_states[message.from_user.id] ==
+                person_states[message['from'].id] ==
                 state_machine.ProjectStates.PROJECT_NAME
         )
     )
     async def set_project_name(message):
         logger.info('Get text message %s', message)
+        print(message)
+        print(message.from_user)
         last_project_info[message.from_user.id]['name'] = message.text
         last_project_info[message.from_user.id]['id'] = id(
             last_project_info[message.from_user.id]['name'])
@@ -673,12 +676,14 @@ def main():
                                            messages_to_delete)
         elif call.data.split('_')[0] == 'CustProjectId':
             await customer_funcs.get_messages_for_project(
-                bot, call, projects_info, int(call.data.split('_')[-1]))
+                bot, call, projects_info, int(call.data.split('_')[-1]),
+                person_states)
         elif call.data == 'to_main_customer_page':
             await customer_funcs.main_customer_page(
                 bot, call,
-                available_project_for_customer[call.message.from_user.username],
+                available_project_for_customer[call.message['from'].username],
                 projects_info)
+            person_states[call.message.message.from_user.id] = None
         elif call.data == 'available_projects':
             username = call['from'].username
             if available_project_for_owner.get(username):
@@ -706,6 +711,12 @@ def main():
 
     @dispatcher.message_handler(content_types=['text'])
     async def text_mess(message):
+        if person_states[message['from'].id].split('_')[
+            0] == 'WRITEPROJECTMESSAGES':
+            data_base.insert_into_db(projects_info[int(
+                person_states[message.from_user.id].split('_')[-1])][
+                                         'name'], message, 'green', 'text')
+            print("\insert into db")
         logger.info('Get text message %s', message)
         # TODO: if it is currently in the project,
         #  throw his message into the database
