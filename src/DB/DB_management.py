@@ -68,6 +68,7 @@ class DBManagement:
 
     def select_from_db(
             self,
+            project_name,
             count: int = 100,
             how: str = 'eq',
             date: int = 0,
@@ -75,15 +76,14 @@ class DBManagement:
             sort: int = 1,
             need_arh_doc: bool = False,
     ) -> Dict:
-
+        self.current_project = self.current_DB[project_name]
         if count == 0:
             if how == 'eq':
                 self.curr_select = self.current_project.find(
                     {
-                        "date": date,
                         "archived": need_arh_doc
                     },
-                ).sort({'date': sort})
+                )
             else:
                 self.curr_select = self.current_project.find(
                     {

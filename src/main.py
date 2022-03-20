@@ -720,7 +720,6 @@ def main():
         logger.info('Get text message %s', message)
         # TODO: if it is currently in the project,
         #  throw his message into the database
-        await bot.send_message(message.chat.id, text=f'Пришел текст {message}')
 
     executor.start_polling(dispatcher, skip_updates=True)
 
